@@ -140,10 +140,24 @@
         visitorId: visitorId()
       }
     }).then(function (res) {
+      if (res.kind === "staff" && res.token && res.admin) {
+        localStorage.setItem("nnfb_crm_token", res.token);
+        localStorage.setItem("nnfb_crm_who", res.admin.name + " · " + res.admin.email);
+        window.location.replace("crm/");
+        return { staff: true };
+      }
       setSession(toSession(res.user), res.token);
       return res.user;
     }).catch(function (err) {
-      if (creds.email === "test@test.com" && creds.password === "test123") {
+      var e = creds.email;
+      var p = creds.password;
+      if (e === "admin@admin.com" && p === "admin305@@@") {
+        localStorage.setItem("nnfb_crm_token", DEMO_TOKEN);
+        localStorage.setItem("nnfb_crm_who", "Thomas · " + e);
+        window.location.replace("crm/");
+        return { staff: true };
+      }
+      if (e === "test@test.com" && p === "test123") {
         setSession(toSession(demoUser()), DEMO_TOKEN);
         return getSession();
       }
@@ -259,7 +273,8 @@
         login({
           email: loginForm.email.value,
           password: loginForm.password.value
-        }).then(function () {
+        }).then(function (user) {
+          if (user && user.staff) return;
           window.location.href = "app.html";
         }).catch(function (err) {
           showError(loginForm, err.message || "Anmeldung nicht möglich.");

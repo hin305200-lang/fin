@@ -14,7 +14,7 @@ python3 server.py
 
 Then open [http://127.0.0.1:4471/](http://127.0.0.1:4471/).
 
-Do not use `python3 -m http.server` — signup, login, and tracking need `server.py`.
+Do not use `python3 -m http.server` if you want live tracking — that still needs `server.py`.
 
 Demo client login is `test@test.com` / `test123`. Override with `NNFIN_DEMO_EMAIL` and `NNFIN_DEMO_PASSWORD` if needed.
 
