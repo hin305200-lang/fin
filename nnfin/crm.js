@@ -13,6 +13,26 @@
   var refreshTimer = null;
   var clockTimer = null;
 
+  function bindPasswordToggles(root) {
+    root = root || document;
+    var german = (document.documentElement.lang || "").toLowerCase().indexOf("de") === 0;
+    var showLabel = german ? "Passwort anzeigen" : "Show password";
+    var hideLabel = german ? "Passwort verbergen" : "Hide password";
+    root.querySelectorAll(".pw-wrap").forEach(function (wrap) {
+      var input = wrap.querySelector("input");
+      var btn = wrap.querySelector(".pw-toggle");
+      if (!input || !btn || btn.getAttribute("data-pw-bound")) return;
+      btn.setAttribute("data-pw-bound", "1");
+      btn.addEventListener("click", function () {
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.classList.toggle("on", show);
+        btn.setAttribute("aria-pressed", show ? "true" : "false");
+        btn.setAttribute("aria-label", show ? hideLabel : showLabel);
+      });
+    });
+  }
+
   function token() { return localStorage.getItem(TOKEN_KEY); }
   function setToken(t) { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }
   function isDemo() { return token() === DEMO_TOKEN; }
@@ -755,6 +775,7 @@
 
   document.getElementById("admEmail").value = "";
   document.getElementById("admPass").value = "";
+  bindPasswordToggles();
   if (isDemo()) {
     enter();
   } else if (token()) {

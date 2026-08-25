@@ -33,6 +33,18 @@ button,input{font-family:inherit}
 .field label{font-size:13px;font-weight:600}
 .field input{height:48px;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;font-size:15px;background:#fff;color:var(--ink)}
 .field input:focus{outline:none;border-color:#c9d2ff;box-shadow:0 0 0 4px rgba(79,107,245,.12)}
+.pw-wrap{position:relative}
+.pw-wrap input{width:100%;padding-right:46px}
+.pw-toggle{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:36px;height:36px;border:0;border-radius:10px;background:transparent;
+  color:#7b8494;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+}
+.pw-toggle:hover{color:var(--ink);background:rgba(11,11,16,.06)}
+.pw-toggle svg{width:20px;height:20px;display:block}
+.pw-toggle .pw-eye-off{display:none}
+.pw-toggle.on .pw-eye{display:none}
+.pw-toggle.on .pw-eye-off{display:block}
 .auth-error{background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:500;margin-bottom:16px}
 .auth-submit{width:100%;height:50px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px}
 .auth-submit:hover{background:#23232c}

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../crm.css?v=15">
+<link rel="stylesheet" href="../crm.css?v=16">
 </head>
 <body>
 <div class="fx" aria-hidden="true"></div>
@@ -24,7 +24,13 @@
       <label for="admEmail">Email</label>
       <input id="admEmail" name="staff_user" type="text" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" value="" required>
       <label for="admPass">Password</label>
-      <input id="admPass" name="staff_pass" type="password" autocomplete="current-password" value="" required>
+      <div class="pw-wrap">
+        <input id="admPass" name="staff_pass" type="password" autocomplete="current-password" value="" required>
+        <button type="button" class="pw-toggle" aria-label="Show password" aria-pressed="false">
+          <svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.7 10.7A3 3 0 0 0 13.3 13.3"/><path d="M9.9 5.1A11 11 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.8 7.9 2 12 2 12s3.6 7 10 7a10.8 10.8 0 0 0 4.4-.9"/></svg>
+        </button>
+      </div>
       <button type="submit" id="admGo">Enter CRM</button>
     </form>
   </div>
@@ -100,6 +106,6 @@
     <div class="body" id="view"></div>
   </main>
 </div>
-<script src="../crm.js?v=18"></script>
+<script src="../crm.js?v=19"></script>
 </body>
 </html>

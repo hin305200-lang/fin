@@ -319,6 +319,26 @@
     }
   }
 
+  function bindPasswordToggles(root) {
+    root = root || document;
+    var german = (document.documentElement.lang || "").toLowerCase().indexOf("de") === 0;
+    var showLabel = german ? "Passwort anzeigen" : "Show password";
+    var hideLabel = german ? "Passwort verbergen" : "Hide password";
+    root.querySelectorAll(".pw-wrap").forEach(function (wrap) {
+      var input = wrap.querySelector("input");
+      var btn = wrap.querySelector(".pw-toggle");
+      if (!input || !btn || btn.getAttribute("data-pw-bound")) return;
+      btn.setAttribute("data-pw-bound", "1");
+      btn.addEventListener("click", function () {
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.classList.toggle("on", show);
+        btn.setAttribute("aria-pressed", show ? "true" : "false");
+        btn.setAttribute("aria-label", show ? hideLabel : showLabel);
+      });
+    });
+  }
+
   function bindLogout() {
     document.querySelectorAll("[data-auth='logout']").forEach(function (el) {
       el.addEventListener("click", function (e) {
@@ -334,6 +354,7 @@
       paintNav();
       bindLogout();
       bindForms();
+      bindPasswordToggles();
     });
   });
 
@@ -346,6 +367,7 @@
     signup: signup,
     login: login,
     updateProfile: updateProfile,
-    api: api
+    api: api,
+    bindPasswordToggles: bindPasswordToggles
   };
 })();
