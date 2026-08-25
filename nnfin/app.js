@@ -65,6 +65,10 @@
   }
   function uid(prefix) { return (prefix || "id") + "-" + Date.now() + "-" + Math.floor(Math.random() * 9999); }
 
+  function isDemoUser() {
+    return session.id === "demo-test-user" || session.email === "test@test.com";
+  }
+
   function defaultProfile() {
     return {
       address: "Linienstraße 48, 10119 Berlin",
@@ -125,26 +129,49 @@
     return book;
   }
 
+  function emptyBook() {
+    return normalizeBook({
+      v: 2,
+      cash: 0,
+      holdings: [],
+      accounts: [],
+      transactions: [],
+      linkedBanks: [],
+      profile: {
+        address: "",
+        taxId: "",
+        kyc: "open",
+        twoFa: false,
+        notifyEmail: true,
+        notifyPush: false
+      }
+    });
+  }
+
   function loadBook() {
     try {
       var raw = localStorage.getItem(STORE);
       if (raw) {
         var parsed = JSON.parse(raw);
-        var isDemo = session.id === "demo-test-user" || session.email === "test@test.com";
-        if (isDemo && parsed.v !== 2) {
+        if (isDemoUser() && parsed.v !== 2) {
           var demo = demoBook();
           localStorage.setItem(STORE, JSON.stringify(demo));
           return demo;
         }
+        if (!isDemoUser() && parsed.v !== 2) {
+          var fresh = emptyBook();
+          localStorage.setItem(STORE, JSON.stringify(fresh));
+          return fresh;
+        }
         return normalizeBook(parsed);
       }
     } catch (e) {}
-    if (session.id === "demo-test-user" || session.email === "test@test.com") {
+    if (isDemoUser()) {
       var demo = demoBook();
       localStorage.setItem(STORE, JSON.stringify(demo));
       return demo;
     }
-    var empty = normalizeBook({ cash: 0, holdings: [] });
+    var empty = emptyBook();
     localStorage.setItem(STORE, JSON.stringify(empty));
     return empty;
   }
@@ -253,6 +280,18 @@
   }
 
   function depositFlow() {
+    if (!isDemoUser()) {
+      openModal(
+        "<h3>Einzahlen</h3>" +
+        "<p>Um Guthaben einzuzahlen, wenden Sie sich bitte an Ihren Kundenberater.</p>" +
+        "<p>NN-Finanzberatung GmbH<br>+4915215729944</p>" +
+        '<div class="actions"><button class="btn btn-dark" id="depOk">Schließen</button></div>',
+        function (modal) {
+          modal.querySelector("#depOk").onclick = closeModal;
+        }
+      );
+      return;
+    }
     var opts = accounts().map(function (a) {
       return '<option value="' + a.id + '">' + a.nickname + " · " + eur(a.balance) + "</option>";
     }).join("");
@@ -545,7 +584,7 @@
       '<div class="stats">' +
       '<div class="card stat"><div class="lbl">Verbundene Banken</div><div class="val">' + book.linkedBanks.length + '</div><div class="delta">' + book.accounts.length + " Konten aktiv</div></div>" +
       '<div class="card stat"><div class="lbl">Bestes Tagesgeld</div><div class="val">' + pct(topSave.rate) + '</div><div class="delta">' + partner(topSave.partner).name + "</div></div>" +
-      '<div class="card stat"><div class="lbl">KYC</div><div class="val">OK</div><div class="delta">Identität verifiziert</div></div>' +
+      '<div class="card stat"><div class="lbl">KYC</div><div class="val">' + (isDemoUser() || (book.profile && book.profile.kyc === "verified") ? "OK" : "Offen") + '</div><div class="delta">' + (isDemoUser() || (book.profile && book.profile.kyc === "verified") ? "Identität verifiziert" : "Noch nicht abgeschlossen") + "</div></div>" +
       "</div>" +
       '<div class="section-h"><div><h2>Ihre Konten</h2><p>Hausbanken und Neobanken in einer Übersicht.</p></div><button class="btn btn-outline btn-sm" data-go="accounts">Alle Konten</button></div>' +
       '<div class="acct-grid">' + accounts().slice(0, 4).map(function (a) { return accountCard(a, true); }).join("") + "</div>" +

@@ -118,7 +118,14 @@
       return res.user;
     }).catch(function (err) {
       if (err && err.status === 400) throw err;
-      setSession(toSession(demoUser({ name: name, email: email, phone: phone })), DEMO_TOKEN);
+      setSession(toSession(demoUser({
+        id: "user-" + Date.now() + "-" + Math.random().toString(16).slice(2),
+        name: name,
+        email: email,
+        phone: phone,
+        address: "",
+        tax_id: ""
+      })), DEMO_TOKEN);
       return getSession();
     });
   }
