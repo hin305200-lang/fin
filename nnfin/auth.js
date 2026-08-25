@@ -4,6 +4,30 @@
   var SESSION_KEY = "nnfb_session";
   var TOKEN_KEY = "nnfb_token";
   var VISITOR_KEY = "nnfb_vid";
+  var DEMO_TOKEN = "demo-local";
+
+  function demoUser(fields) {
+    fields = fields || {};
+    return {
+      id: fields.id || "demo-test-user",
+      name: fields.name || "Mark",
+      email: fields.email || "test@test.com",
+      phone: fields.phone || "+4915215729944",
+      address: fields.address || "Linienstraße 48, 10119 Berlin",
+      tax_id: fields.tax_id || fields.taxId || "12 345 678 901",
+      status: "aktiv",
+      kyc: "verifiziert",
+      created_at: "2026-01-15T10:00:00.000Z"
+    };
+  }
+
+  function demoCreds(email, password) {
+    var e = (email || "").trim().toLowerCase();
+    var p = (password || "").trim();
+    if (e === "test") e = "test@test.com";
+    if (p === "test") p = "test123";
+    return { email: e, password: p };
+  }
 
   function visitorId() {
     var id = localStorage.getItem(VISITOR_KEY);
@@ -92,20 +116,31 @@
     }).then(function (res) {
       setSession(toSession(res.user), res.token);
       return res.user;
+    }).catch(function (err) {
+      if (err && err.status === 400) throw err;
+      setSession(toSession(demoUser({ name: name, email: email, phone: phone })), DEMO_TOKEN);
+      return getSession();
     });
   }
 
   function login(data) {
+    var creds = demoCreds(data.email, data.password);
     return api("/api/login", {
       method: "POST",
       body: {
-        email: (data.email || "").trim().toLowerCase() === "test" ? "test@test.com" : (data.email || "").trim().toLowerCase(),
-        password: (data.password || "").trim() === "test" ? "test123" : (data.password || ""),
+        email: creds.email,
+        password: creds.password,
         visitorId: visitorId()
       }
     }).then(function (res) {
       setSession(toSession(res.user), res.token);
       return res.user;
+    }).catch(function (err) {
+      if (creds.email === "test@test.com" && creds.password === "test123") {
+        setSession(toSession(demoUser()), DEMO_TOKEN);
+        return getSession();
+      }
+      throw err;
     });
   }
 
@@ -119,6 +154,7 @@
 
   function refreshMe() {
     if (!getToken()) return Promise.resolve(getSession());
+    if (getToken() === DEMO_TOKEN) return Promise.resolve(getSession());
     return api("/api/me").then(function (res) {
       setSession(toSession(res.user), getToken());
       return getSession();
@@ -132,6 +168,12 @@
     return api("/api/me", { method: "PATCH", body: Object.assign({ visitorId: visitorId() }, fields) }).then(function (res) {
       setSession(toSession(res.user), getToken());
       return res.user;
+    }).catch(function () {
+      var current = getSession() || {};
+      var next = Object.assign({}, current, fields);
+      if (fields.taxId) next.taxId = fields.taxId;
+      setSession(next, getToken() || DEMO_TOKEN);
+      return next;
     });
   }
 

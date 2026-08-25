@@ -53,4 +53,4 @@ chmod +x scripts/pack-for-github.sh
 
 Then on GitHub: **Add file → Upload files**, and drop the folder `nnfin-github-upload` (next to `nnfin`, in Downloads).
 
-If you turn on **GitHub Pages** (Settings → Pages → Deploy from branch `main`), the public site can show. Login and signup still need `python3 server.py` locally — GitHub Pages is static files only.
+If you turn on **GitHub Pages** (Settings → Pages → Deploy from branch `main`), the public site can show at `https://YOUR_USER.github.io/REPO/nnfin/`. Login works there with the demo account `test` / `test123`. Signup also works in the browser. Full tracking still needs `python3 server.py` locally.
