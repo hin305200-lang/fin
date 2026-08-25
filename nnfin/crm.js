@@ -56,6 +56,46 @@
     return out;
   }
 
+  function firstName(name) {
+    return ((name || "").trim().split(/\s+/)[0]) || "Visitor";
+  }
+
+  function displayName(u) {
+    return firstName((u && (u.name || u.user_name)) || "Visitor");
+  }
+
+  function localNodes() {
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem("nnfb_signal_log") || "[]"); } catch (e) { log = []; }
+    var map = {};
+    (log || []).forEach(function (e) {
+      var id = e.userId || ("vid-" + (e.visitorId || "anon"));
+      if (!map[id]) {
+        map[id] = {
+          id: id,
+          name: firstName(e.userName || "Visitor"),
+          email: "",
+          status: "neu",
+          kyc: "offen",
+          online: true,
+          last_seen_at: e.created_at,
+          login_count: 0,
+          events: 0,
+          score: 24,
+          lastEvent: null,
+          _log: []
+        };
+      }
+      var node = map[id];
+      node.events += 1;
+      node.last_seen_at = e.created_at;
+      node.lastEvent = { type: e.type, label: e.label, path: e.path, created_at: e.created_at };
+      node._log.push(e);
+      if (e.userName) node.name = firstName(e.userName);
+    });
+    return Object.keys(map).map(function (k) { return map[k]; });
+  }
+
   function demoClientBase() {
     var events = [
       { type: "page_view", path: "/", title: "NN Finanz", label: "Startseite", created_at: "2026-08-18T08:12:00.000Z", user_name: "Mark", user_email: "test@test.com" },
@@ -72,32 +112,20 @@
       id: "demo-test-user",
       name: "Mark",
       email: "test@test.com",
-      phone: "+4915215729944",
-      address: "Linienstraße 48, 10119 Berlin",
-      tax_id: "12 345 678 901",
       status: "aktiv",
       kyc: "verifiziert",
-      notes: "Demo-Mandant für Plattformtests.",
-      tags: "demo,vip",
-      source: "seed",
       created_at: "2026-01-15T10:00:00.000Z",
       last_login_at: "2026-08-24T08:10:00.000Z",
       last_seen_at: new Date().toISOString(),
-      last_ip: "127.0.0.1",
-      last_user_agent: "Mozilla/5.0 (Macintosh) Chrome/126",
       login_count: 12,
       online: true,
       score: 78,
       events: events.length,
-      device: { os: "macOS", browser: "Chrome", device: "Desktop" },
       lastEvent: events[events.length - 1],
       openSessions: 1,
-      openSession: { created_at: "2026-08-24T08:10:00.000Z", last_seen_at: new Date().toISOString(), ip: "127.0.0.1" }
+      openSession: { created_at: "2026-08-24T08:10:00.000Z", last_seen_at: new Date().toISOString() }
     };
-    var state = demoState();
-    if (state.edits && state.edits[user.id]) Object.assign(user, state.edits[user.id]);
-    user.notes = (state.edits && state.edits[user.id] && state.edits[user.id].notes) || user.notes;
-    return { user: user, events: events, extraNotes: (state.notes && state.notes[user.id]) || [] };
+    return { user: user, events: events, extraNotes: (demoState().notes && demoState().notes[user.id]) || [] };
   }
 
   function demoApi(path, opts) {
@@ -154,21 +182,38 @@
         funnel: { signups: 1, logins: 2, marketplace: 4, actions: 1, banks: 1 },
         heatmap: emptyHeat(),
         feed: events.slice(0, 8),
-        priority: [u]
+        priority: [u].concat(localNodes().filter(function (n) { return n.id !== u.id; })).slice(0, 8)
       });
     }
     if (path.indexOf("/api/admin/clients") === 0 && !m) {
-      var list = [u];
-      if (params.q && (u.name + u.email).toLowerCase().indexOf(params.q.toLowerCase()) < 0) list = [];
-      if (params.status && u.status !== params.status) list = [];
-      if (params.kyc && u.kyc !== params.kyc) list = [];
+      var extras = localNodes().filter(function (n) { return n.id !== u.id && n.email !== u.email; });
+      var list = [u].concat(extras);
+      if (params.q) {
+        list = list.filter(function (n) {
+          return (n.name + " " + n.email).toLowerCase().indexOf(params.q.toLowerCase()) >= 0;
+        });
+      }
+      if (params.status) list = list.filter(function (n) { return n.status === params.status; });
+      if (params.kyc) list = list.filter(function (n) { return n.kyc === params.kyc; });
       return Promise.resolve({ clients: list });
     }
-    if (path.indexOf("/api/admin/live") === 0) return Promise.resolve({ live: [u] });
+    if (path.indexOf("/api/admin/live") === 0) return Promise.resolve({ live: [u].concat(localNodes().filter(function (n) { return n.id !== u.id; })) });
     if (path.indexOf("/api/admin/activity") === 0) {
-      var ev = events;
+      var ev = events.concat(localNodes().reduce(function (acc, n) {
+        return acc.concat((n._log || []).map(function (e) {
+          return {
+            type: e.type,
+            label: e.label,
+            path: e.path,
+            created_at: e.created_at,
+            user_name: firstName(e.userName || n.name),
+            user_email: ""
+          };
+        }));
+      }, []));
+      ev.sort(function (a, b) { return String(b.created_at).localeCompare(String(a.created_at)); });
       if (params.type) ev = ev.filter(function (e) { return e.type === params.type; });
-      return Promise.resolve({ events: ev });
+      return Promise.resolve({ events: ev.slice(0, 160) });
     }
     if (path.indexOf("/api/admin/intel") === 0) {
       return Promise.resolve({
@@ -177,26 +222,30 @@
         series: demoSeries(),
         mix: [{ type: "page_view", n: 4 }, { type: "click", n: 3 }, { type: "login", n: 2 }],
         topPages: [{ path: "/app.html", title: "Marktplatz", views: 5 }, { path: "/", title: "NN Finanz", views: 2 }],
-        devices: [{ label: "macOS · Chrome", n: 1 }],
+        devices: [],
         failed: [],
-        ips: [{ ip: "127.0.0.1", n: 9, last_at: u.last_seen_at }],
+        ips: [],
         topClicks: [{ label: "Banken", path: "/app.html", n: 1, last_at: "2026-08-18T08:14:11.000Z" }, { label: "Umsätze", path: "/app.html", n: 1, last_at: "2026-08-24T08:11:03.000Z" }]
       });
     }
     if (m && method === "GET") {
-      if (id !== u.id) return Promise.reject(new Error("Client not found."));
+      var node = id === u.id ? u : localNodes().filter(function (n) { return n.id === id; })[0];
+      if (!node) return Promise.reject(new Error("Client not found."));
+      var nodeEvents = id === u.id ? events : (node._log || []).map(function (e) {
+        return { type: e.type, label: e.label, path: e.path, created_at: e.created_at, user_name: node.name, user_email: node.email || "" };
+      });
       return Promise.resolve({
-        user: u,
-        stats: { events: pack.events.length, clicks: 3, pageViews: 4, logins: 2, logouts: 0, actions: 1, failed: 0, notes: pack.extraNotes.length, activeDays: 4, sessions: 1, avgSession: 420, openSessions: 1 },
-        topPages: [{ path: "/app.html", title: "Marktplatz", views: 5 }, { path: "/", title: "NN Finanz", views: 2 }],
-        topClicks: [{ label: "Banken", path: "/app.html", n: 1, last_at: "2026-08-18T08:14:11.000Z" }],
+        user: node,
+        stats: { events: nodeEvents.length, clicks: nodeEvents.filter(function (e) { return e.type === "click"; }).length, pageViews: nodeEvents.filter(function (e) { return e.type === "page_view"; }).length, logins: nodeEvents.filter(function (e) { return e.type === "login"; }).length, logouts: 0, actions: nodeEvents.filter(function (e) { return e.type === "app_action"; }).length, failed: 0, notes: 0, activeDays: 1, sessions: 1, avgSession: 0, openSessions: 1 },
+        topPages: [],
+        topClicks: [],
         notes: pack.extraNotes,
-        sessions: [{ created_at: "2026-08-24T08:10:00.000Z", ended_at: null, seconds: 420, ip: "127.0.0.1", logout_reason: "", device: u.device }],
-        events: events,
+        sessions: [{ created_at: node.last_seen_at || node.created_at, ended_at: null, seconds: 0 }],
+        events: nodeEvents,
         heatmap: emptyHeat(),
         series: demoSeries(),
-        mix: [{ type: "page_view", n: 4 }, { type: "click", n: 3 }, { type: "login", n: 2 }],
-        ips: [{ ip: "127.0.0.1", n: 9, last_at: u.last_seen_at }]
+        mix: [],
+        ips: []
       });
     }
     return Promise.resolve({});
@@ -442,21 +491,21 @@
 
   function feedRow(e) {
     return '<div class="feed-item"><span class="muted">' + fmt(e.created_at) + '</span><div><b>' +
-      esc(e.user_name || e.user_email || "Visitor") + '</b><span class="tag">' + esc(eventLabel(e)) + "</span>" +
+      esc(displayName({ name: e.user_name || e.user_email || "Visitor" })) + '</b><span class="tag">' + esc(eventLabel(e)) + "</span>" +
       esc(e.label || e.path || "") + "</div></div>";
   }
 
   function clientsTable(list, rich) {
     if (!list || !list.length) return '<p class="muted">No clients yet.</p>';
-    return '<table class="table"><thead><tr><th>Node</th><th>Contact</th><th>State</th><th>Last signal</th>' +
-      (rich ? "<th>Score</th><th>Device</th>" : "<th></th>") + "</tr></thead><tbody>" +
+    return '<table class="table"><thead><tr><th>Node</th><th>Email</th><th>State</th><th>Last signal</th>' +
+      (rich ? "<th>Score</th>" : "<th></th>") + "</tr></thead><tbody>" +
       list.map(function (u) {
-        return '<tr class="row" data-id="' + esc(u.id) + '"><td><b>' + esc(u.name) + "</b><div class='muted'>" + online(u) +
-          "</div></td><td>" + esc(u.email) + "<div class='muted'>" + esc(u.phone || "—") + "</div></td><td>" + pill(u.status) + " " +
+        return '<tr class="row" data-id="' + esc(u.id) + '"><td><b>' + esc(displayName(u)) + "</b><div class='muted'>" + online(u) +
+          ' <span class="seal">sealed</span></div></td><td>' + esc(u.email || "—") + "</td><td>" + pill(u.status) + " " +
           pill(u.kyc) + "</td><td>" + fmt(u.last_seen_at || u.last_login_at) +
           (u.lastEvent ? '<div class="muted">' + esc(eventLabel(u.lastEvent)) + " · " + esc(u.lastEvent.label || u.lastEvent.path || "") + "</div>" : "") +
           "</td>" + (rich
-            ? "<td><b>" + esc(u.score || 0) + "</b><div class='muted'>" + esc(u.events || 0) + " events</div></td><td class='muted'>" + esc(deviceLine(u.device)) + "</td>"
+            ? "<td><b>" + esc(u.score || 0) + "</b><div class='muted'>" + esc(u.events || 0) + " events</div></td>"
             : "<td class='muted'>" + esc(u.login_count || 0) + " logins</td>") + "</tr>";
       }).join("") + "</tbody></table>";
   }
@@ -479,6 +528,7 @@
         kpi("Sign-ups", d.signupsToday, "today") +
         kpi("Clicks", d.clicksToday, "today") +
         kpi("Failed", d.failedToday, "auth rejects") + "</div>" +
+        '<div class="card vault-banner"><div><h2>Identity vault</h2><p>Names and emails are sealed at rest. Lattice decrypts first name and email after staff auth. Phone, address, tax ID, IP, and device stay off this surface.</p></div><span class="seal">hmac-sha256</span></div>' +
         '<div class="grid3"><div class="card"><div class="card-head"><h2>14-day telemetry</h2><span class="mono">' + esc(d.eventsToday) + " today</span></div>" +
         bars(d.series) + '</div><div class="card"><h2>Conversion lattice</h2>' + funnelHtml(d.funnel) +
         '</div><div class="card"><h2>Signal mix</h2>' + mixHtml(d.mix) + "</div></div>" +
@@ -523,7 +573,7 @@
         var r = 28 + (i % 4) * 12;
         var x = 50 + Math.cos(ang) * r;
         var y = 50 + Math.sin(ang) * r;
-        return '<div class="blip" data-id="' + esc(u.id) + '" style="left:' + x + "%;top:" + y + '%"><span>' + esc(u.name) + "</span></div>";
+        return '<div class="blip" data-id="' + esc(u.id) + '" style="left:' + x + "%;top:" + y + '%"><span>' + esc(displayName(u)) + "</span></div>";
       }).join("") + "</div>";
       viewEl.innerHTML =
         '<div class="kpis">' + kpi("Live nodes", nodes.length, "heartbeat < 90s") +
@@ -533,9 +583,9 @@
         '</div><div class="card"><h2>Active dossiers</h2>' +
         (nodes.length ? nodes.map(function (u) {
           return '<div class="feed-item row" data-id="' + esc(u.id) + '" style="cursor:pointer"><span class="muted">' + fmt(u.last_seen_at) +
-            "</span><div><b>" + esc(u.name) + "</b>" + esc(deviceLine(u.device)) +
+            "</span><div><b>" + esc(displayName(u)) + "</b><div class='muted'>" + esc(u.email || "") + "</div>" +
             (u.lastEvent ? '<div class="muted">' + esc(eventLabel(u.lastEvent)) + " · " + esc(u.lastEvent.label || u.lastEvent.path || "") + "</div>" : "") +
-            '<div class="mono">' + esc(u.last_ip || "—") + "</div></div></div>";
+            "</div></div>";
         }).join("") : '<p class="muted">Waiting for a client heartbeat.</p>') + "</div></div>";
       bindRows();
       viewEl.querySelectorAll(".blip").forEach(function (b) {
@@ -569,15 +619,9 @@
         heatHtml(d.heatmap) + '</div><div class="card"><h2>Funnel</h2>' + funnelHtml(d.funnel) + bars(d.series) + "</div></div>" +
         '<div class="grid3"><div class="card"><h2>Signal mix</h2>' + mixHtml(d.mix) +
         '</div><div class="card"><h2>Surfaces</h2>' + topPages(d.topPages) +
-        '</div><div class="card"><h2>Devices</h2>' + (d.devices || []).map(function (x) {
-          return '<div class="mix-row"><span>' + esc(x.label) + "</span><div></div><b>" + x.n + "</b></div>";
-        }).join("") + "</div></div>" +
-        '<div class="grid2"><div class="card"><h2>Auth rejects</h2><div class="feed">' +
+        '</div><div class="card"><h2>Auth rejects</h2><div class="feed">' +
         ((d.failed || []).length ? d.failed.map(feedRow).join("") : '<p class="muted">No failed logins stored.</p>') +
-        '</div></div><div class="card"><h2>Origin IPs</h2><table class="table"><thead><tr><th>IP</th><th>Nodes</th><th>Last</th></tr></thead><tbody>' +
-        (d.ips || []).map(function (r) {
-          return "<tr><td class='mono'>" + esc(r.ip) + "</td><td>" + r.n + "</td><td>" + fmt(r.last_at) + "</td></tr>";
-        }).join("") + "</tbody></table></div></div>" +
+        "</div></div></div>" +
         '<div class="card"><h2>Hot clicks</h2>' + topClicks(d.topClicks) + "</div>";
       arm(function () { if (current === "intel") loadIntel(); }, 12000);
     }).catch(showErr);
@@ -603,15 +647,13 @@
     api("/api/admin/clients/" + encodeURIComponent(id)).then(function (d) {
       var u = d.user;
       var st = d.stats || {};
-      titleEl.textContent = u.name;
+      titleEl.textContent = displayName(u);
       viewEl.innerHTML =
         '<button class="back" id="goClients">← All nodes</button>' +
         '<div class="hero">' + scoreRing(u.score) +
-        "<div><h3>" + esc(u.name) + "</h3><p class='muted'>" + esc(u.email) + " · " + esc(u.phone || "no phone") +
-        "</p><p class='mono' style='margin-top:8px'>" + online(u) + " · " + esc(deviceLine(u.device)) +
-        " · " + esc(u.last_ip || "no IP") + "</p></div>" +
-        "<div>" + pill(u.status) + " " + pill(u.kyc) +
-        '<div class="muted" style="margin-top:8px">Source ' + esc(u.source || "—") + "<br>Tags " + esc(u.tags || "—") + "</div></div></div>" +
+        "<div><h3>" + esc(displayName(u)) + ' <span class="seal">sealed</span></h3><p class="muted">' + esc(u.email || "") +
+        "</p><p style='margin-top:8px'>" + online(u) + "</p></div>" +
+        "<div>" + pill(u.status) + " " + pill(u.kyc) + "</div></div>" +
         '<div class="statrow">' +
         [["Events", st.events], ["Clicks", st.clicks], ["Pages", st.pageViews], ["Logins", st.logins],
           ["Actions", st.actions], ["Days", st.activeDays], ["Avg session", fmtDur(st.avgSession)], ["Open", st.openSessions]
@@ -619,22 +661,10 @@
           return "<div><i>" + x[0] + "</i><b>" + esc(x[1]) + "</b></div>";
         }).join("") + "</div>" +
         '<div class="dossier"><div class="card"><h2>Identity</h2>' +
-        field("name", "Name", u.name) + field("email", "Email", u.email) + field("phone", "Phone", u.phone) +
-        field("address", "Address", u.address) + field("tax_id", "Tax ID", u.tax_id) +
-        '<div class="field"><label>Status</label><select id="f_status">' +
-        ["neu", "aktiv", "beratung", "inaktiv"].map(function (s) {
-          return '<option value="' + s + '"' + (u.status === s ? " selected" : "") + ">" + STATUS[s] + "</option>";
-        }).join("") + "</select></div>" +
-        '<div class="field"><label>KYC</label><select id="f_kyc">' +
-        ["offen", "verifiziert", "abgelehnt"].map(function (s) {
-          return '<option value="' + s + '"' + (u.kyc === s ? " selected" : "") + ">" + KYC[s] + "</option>";
-        }).join("") + "</select></div>" +
-        field("tags", "Tags", u.tags) +
-        '<div class="field"><label>Internal notes</label><textarea id="f_notes">' + esc(u.notes) + "</textarea></div>" +
-        '<div class="field"><label>Set new password (optional)</label><input id="f_password" type="password" placeholder="leave blank to keep current"></div>' +
-        '<p class="muted">Created ' + fmt(u.created_at) + " · Last login " + fmt(u.last_login_at) + " · Logout " + fmt(u.last_logout_at) +
-        "<br>Updated " + fmt(u.updated_at) + "<br>" + esc(u.last_user_agent || "") + "</p>" +
-        '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-dark" id="saveClient">Commit identity</button></div></div>' +
+        '<p class="muted">Vault shows first name and email only. Full profile stays encrypted at rest.</p>' +
+        '<div class="id-row"><i>First name</i><b>' + esc(displayName(u)) + "</b></div>" +
+        '<div class="id-row"><i>Email</i><b>' + esc(u.email || "—") + "</b></div>" +
+        '<p class="muted">Created ' + fmt(u.created_at) + " · Last login " + fmt(u.last_login_at) + "</p></div>" +
         '<div><div class="tabs">' +
         [["timeline", "Timeline"], ["signals", "Signals"], ["clicks", "Clicks"], ["pages", "Pages"], ["sessions", "Sessions"], ["notes", "Notes"]].map(function (t) {
           return '<button class="' + (detailTab === t[0] ? "on" : "") + '" data-tab="' + t[0] + '">' + t[1] + "</button>";
@@ -648,12 +678,7 @@
           viewEl.querySelectorAll("[data-tab]").forEach(function (x) { x.classList.toggle("on", x === b); });
         };
       });
-      document.getElementById("saveClient").onclick = function () { saveClient(id); };
     }).catch(showErr);
-  }
-
-  function field(id, label, val) {
-    return '<div class="field"><label>' + label + '</label><input id="f_' + id + '" value="' + esc(val || "") + '"></div>';
   }
 
   function paintDetail(d) {
@@ -666,19 +691,16 @@
       }).join("") + "</div>";
     } else if (detailTab === "signals") {
       pane.innerHTML = "<h2>Personal lattice</h2>" + heatHtml(d.heatmap) + '<div style="margin:16px 0">' + bars(d.series) + "</div>" +
-        mixHtml(d.mix) + "<h2 style='margin-top:18px'>Origin IPs</h2><table class='table'><thead><tr><th>IP</th><th>Hits</th><th>Last</th></tr></thead><tbody>" +
-        (d.ips || []).map(function (r) {
-          return "<tr><td class='mono'>" + esc(r.ip) + "</td><td>" + r.n + "</td><td>" + fmt(r.last_at) + "</td></tr>";
-        }).join("") + "</tbody></table>";
+        mixHtml(d.mix);
     } else if (detailTab === "clicks") {
       pane.innerHTML = "<h2>Top clicks</h2>" + topClicks(d.topClicks);
     } else if (detailTab === "pages") {
       pane.innerHTML = "<h2>Pages visited</h2>" + topPages(d.topPages);
     } else if (detailTab === "sessions") {
-      pane.innerHTML = "<h2>Sessions</h2><table class='table'><thead><tr><th>Start</th><th>Span</th><th>IP</th><th>Device</th></tr></thead><tbody>" +
+      pane.innerHTML = "<h2>Sessions</h2><table class='table'><thead><tr><th>Start</th><th>Span</th></tr></thead><tbody>" +
         (d.sessions || []).map(function (s) {
           return "<tr><td>" + fmt(s.created_at) + "</td><td>" + (s.ended_at ? fmtDur(s.seconds) + " · " + esc(s.logout_reason || "closed") : "<b>open</b> · " + fmtDur(s.seconds)) +
-            "</td><td class='mono'>" + esc(s.ip || "") + "</td><td class='muted'>" + esc(deviceLine(s.device)) + "</td></tr>";
+            "</td></tr>";
         }).join("") + "</tbody></table>";
     } else {
       pane.innerHTML = "<h2>Advisor notes</h2>" +
@@ -698,29 +720,6 @@
     }
   }
 
-  function saveClient(id) {
-    var body = {
-      name: val("f_name"),
-      email: val("f_email"),
-      phone: val("f_phone"),
-      address: val("f_address"),
-      tax_id: val("f_tax_id"),
-      status: val("f_status"),
-      kyc: val("f_kyc"),
-      tags: val("f_tags"),
-      notes: val("f_notes")
-    };
-    var pw = val("f_password");
-    if (pw) body.password = pw;
-    api("/api/admin/clients/" + encodeURIComponent(id), { method: "PATCH", body: body }).then(function () {
-      toast("Identity committed");
-      loadClient(id);
-    }).catch(function (e) { toast(e.message); });
-  }
-  function val(id) {
-    var el = document.getElementById(id);
-    return el ? el.value : "";
-  }
   function showErr(e) {
     viewEl.innerHTML = '<div class="card"><p class="err" style="display:block">' + esc(e.message) + "</p></div>";
   }

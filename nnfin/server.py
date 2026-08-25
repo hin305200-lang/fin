@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -46,6 +47,73 @@ def check_password(password: str, salt: str, expected: str) -> bool:
     return secrets.compare_digest(got, expected)
 
 
+VAULT_PATH = os.path.join(DATA_DIR, "vault.key")
+
+
+def vault_key() -> bytes:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if os.path.exists(VAULT_PATH):
+        with open(VAULT_PATH, "rb") as f:
+            return f.read()
+    key = secrets.token_bytes(32)
+    fd = os.open(VAULT_PATH, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    try:
+        os.write(fd, key)
+    finally:
+        os.close(fd)
+    return key
+
+
+def email_hash(email: str) -> str:
+    return hashlib.sha256((email or "").strip().lower().encode("utf-8")).hexdigest()
+
+
+def first_name(name: str) -> str:
+    return ((name or "").strip().split(" ") or [""])[0] or "—"
+
+
+def seal(plain: str | None) -> str:
+    text = plain or ""
+    if not text:
+        return ""
+    if text.startswith("v1:"):
+        return text
+    raw = text.encode("utf-8")
+    key = vault_key()
+    nonce = secrets.token_bytes(16)
+    stream = hashlib.shake_256(key + nonce).digest(len(raw))
+    ct = bytes(a ^ b for a, b in zip(raw, stream))
+    tag = hmac.new(key, nonce + ct, hashlib.sha256).digest()
+    return "v1:" + nonce.hex() + ":" + ct.hex() + ":" + tag.hex()
+
+
+def unseal(token: str | None) -> str:
+    text = token or ""
+    if not text.startswith("v1:"):
+        return text
+    try:
+        _, nhex, chex, thex = text.split(":")
+        nonce, ct, tag = bytes.fromhex(nhex), bytes.fromhex(chex), bytes.fromhex(thex)
+        key = vault_key()
+        expect = hmac.new(key, nonce + ct, hashlib.sha256).digest()
+        if not hmac.compare_digest(expect, tag):
+            return ""
+        stream = hashlib.shake_256(key + nonce).digest(len(ct))
+        return bytes(a ^ b for a, b in zip(ct, stream)).decode("utf-8")
+    except Exception:
+        return ""
+
+
+def user_by_email(email: str):
+    email = (email or "").strip().lower()
+    if not email:
+        return None
+    row = DB.execute("SELECT * FROM users WHERE email_hash = ?", (email_hash(email),)).fetchone()
+    if row:
+        return row
+    return DB.execute("SELECT * FROM users WHERE lower(email) = ?", (email,)).fetchone()
+
+
 def connect() -> sqlite3.Connection:
     os.makedirs(DATA_DIR, exist_ok=True)
     con = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -65,6 +133,7 @@ def init_db() -> None:
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           email TEXT NOT NULL UNIQUE,
+          email_hash TEXT,
           phone TEXT DEFAULT '',
           address TEXT DEFAULT '',
           tax_id TEXT DEFAULT '',
@@ -134,7 +203,39 @@ def init_db() -> None:
         """
     )
     DB.commit()
+    migrate_vault()
+    DB.execute("CREATE INDEX IF NOT EXISTS idx_users_email_hash ON users(email_hash)")
+    DB.commit()
     seed()
+
+
+def migrate_vault() -> None:
+    cols = {r[1] for r in DB.execute("PRAGMA table_info(users)").fetchall()}
+    if "email_hash" not in cols:
+        DB.execute("ALTER TABLE users ADD COLUMN email_hash TEXT")
+    rows = DB.execute("SELECT * FROM users").fetchall()
+    for r in rows:
+        d = dict(r)
+        name, email = d.get("name") or "", d.get("email") or ""
+        if not str(email).startswith("v1:"):
+            h = email_hash(email)
+            DB.execute(
+                """UPDATE users SET name = ?, email = ?, email_hash = ?, phone = ?, address = ?, tax_id = ?, notes = ?
+                   WHERE id = ?""",
+                (
+                    seal(name), seal(email), h,
+                    seal(d.get("phone") or ""), seal(d.get("address") or ""),
+                    seal(d.get("tax_id") or ""), seal(d.get("notes") or ""),
+                    d["id"],
+                ),
+            )
+        elif not d.get("email_hash"):
+            DB.execute("UPDATE users SET email_hash = ? WHERE id = ?", (email_hash(unseal(email)), d["id"]))
+    for n in DB.execute("SELECT id, body FROM crm_notes").fetchall():
+        body = n["body"] or ""
+        if body and not str(body).startswith("v1:"):
+            DB.execute("UPDATE crm_notes SET body = ? WHERE id = ?", (seal(body), n["id"]))
+    DB.commit()
 
 
 def seed() -> None:
@@ -145,12 +246,12 @@ def seed() -> None:
         "INSERT INTO admins (id, name, email, password_hash, salt, created_at) VALUES (?,?,?,?,?,?)",
         (new_id(), "Thomas", email, pw, salt, now()),
     )
-    existing_demo = DB.execute("SELECT id FROM users WHERE email = ?", (DEMO_EMAIL,)).fetchone()
+    existing_demo = user_by_email(DEMO_EMAIL)
     if existing_demo:
         salt, pw = hash_password(DEMO_PASSWORD)
         DB.execute(
-            "UPDATE users SET password_hash = ?, salt = ? WHERE email = ?",
-            (pw, salt, DEMO_EMAIL),
+            "UPDATE users SET password_hash = ?, salt = ? WHERE id = ?",
+            (pw, salt, existing_demo["id"]),
         )
     if not existing_demo:
         salt, pw = hash_password(DEMO_PASSWORD)
@@ -198,10 +299,11 @@ def seed() -> None:
             )
     pad_demo_telemetry()
     DB.commit()
+    migrate_vault()
 
 
 def pad_demo_telemetry() -> None:
-    demo = DB.execute("SELECT id FROM users WHERE email = ?", (DEMO_EMAIL,)).fetchone()
+    demo = user_by_email(DEMO_EMAIL)
     if not demo:
         return
     uid = demo["id"]
@@ -237,10 +339,34 @@ def row_to_dict(row: sqlite3.Row | None) -> dict | None:
 
 def public_user(row) -> dict:
     u = dict(row)
+    u["name"] = unseal(u.get("name"))
+    u["email"] = unseal(u.get("email"))
+    u["phone"] = unseal(u.get("phone"))
+    u["address"] = unseal(u.get("address"))
+    u["tax_id"] = unseal(u.get("tax_id"))
     u.pop("password_hash", None)
     u.pop("salt", None)
+    u.pop("email_hash", None)
+    u.pop("notes", None)
     u["online"] = is_online(u.get("last_seen_at"))
     return u
+
+
+def staff_card(row) -> dict:
+    u = public_user(row)
+    return {
+        "id": u["id"],
+        "name": first_name(u.get("name")),
+        "email": u.get("email") or "",
+        "status": u.get("status") or "neu",
+        "kyc": u.get("kyc") or "offen",
+        "online": u.get("online"),
+        "last_seen_at": u.get("last_seen_at"),
+        "last_login_at": u.get("last_login_at"),
+        "created_at": u.get("created_at"),
+        "login_count": u.get("login_count") or 0,
+        "source": u.get("source") or "",
+    }
 
 
 def is_online(ts: str | None) -> bool:
@@ -371,12 +497,21 @@ def session_seconds(row) -> int:
 
 
 def enrich_user(row) -> dict:
-    u = public_user(row)
+    u = staff_card(row)
     events_n = DB.execute("SELECT COUNT(*) AS c FROM events WHERE user_id = ?", (u["id"],)).fetchone()["c"]
     u["events"] = events_n
     u["score"] = engagement_score(u, events_n)
-    u["device"] = parse_ua(u.get("last_user_agent"))
     return u
+
+
+def staff_event(row) -> dict:
+    d = dict(row)
+    d["user_name"] = first_name(unseal(d.get("user_name")))
+    d["user_email"] = unseal(d.get("user_email"))
+    d.pop("ip", None)
+    d.pop("user_agent", None)
+    d.pop("extra", None)
+    return d
 
 
 def read_json(handler) -> dict:
@@ -494,7 +629,13 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path.startswith("/data/") or parsed.path.endswith(".py") or parsed.path.endswith(".db"):
+        if (
+            parsed.path.startswith("/data/")
+            or parsed.path.endswith(".py")
+            or parsed.path.endswith(".db")
+            or parsed.path.endswith(".key")
+            or parsed.path.endswith(".sqlite")
+        ):
             return self.error_json(403, "Forbidden")
         if self.path.startswith("/api/"):
             return self.dispatch("GET")
@@ -612,7 +753,7 @@ class Handler(SimpleHTTPRequestHandler):
         if m and method == "GET":
             self.require_admin(token)
             rows = DB.execute(
-                "SELECT id, ip, user_agent, created_at, last_seen_at, ended_at, logout_reason FROM sessions WHERE user_id = ? AND kind = 'user' ORDER BY created_at DESC LIMIT 100",
+                "SELECT created_at, last_seen_at, ended_at, logout_reason FROM sessions WHERE user_id = ? AND kind = 'user' ORDER BY created_at DESC LIMIT 100",
                 (m.group(1),),
             ).fetchall()
             return self.send_json(200, {"sessions": [dict(r) for r in rows]})
@@ -625,7 +766,7 @@ class Handler(SimpleHTTPRequestHandler):
                 raise ValueError("Note cannot be empty.")
             DB.execute(
                 "INSERT INTO crm_notes (id, user_id, author, body, created_at) VALUES (?,?,?,?,?)",
-                (new_id(), m.group(1), admin["name"], text, now()),
+                (new_id(), m.group(1), admin["name"], seal(text), now()),
             )
             insert_event(m.group(1), None, sess["id"], "crm_note", "/crm/", "Lattice", "Notiz hinzugefügt", None, {"preview": text[:120]}, ip, user_agent)
             DB.commit()
@@ -648,22 +789,22 @@ class Handler(SimpleHTTPRequestHandler):
             raise ValueError("Das Passwort muss mindestens 8 Zeichen haben.")
         if password != confirm:
             raise ValueError("Die Passwörter stimmen nicht überein.")
-        if DB.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone():
+        if user_by_email(email):
             raise ValueError("Für diese E-Mail existiert bereits ein Konto. Bitte anmelden.")
         uid = new_id()
         salt, pw = hash_password(password)
         ts = now()
         DB.execute(
-            """INSERT INTO users (id, name, email, phone, status, kyc, source, password_hash, salt, visitor_id,
+            """INSERT INTO users (id, name, email, email_hash, phone, status, kyc, source, password_hash, salt, visitor_id,
                created_at, updated_at, last_login_at, last_seen_at, last_ip, last_user_agent, login_count)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (uid, name, email, phone, "neu", "offen", "signup", pw, salt, visitor_id or None,
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (uid, seal(name), seal(email), email_hash(email), seal(phone), "neu", "offen", "signup", pw, salt, visitor_id or None,
              ts, ts, ts, ts, ip, user_agent, 1),
         )
         if visitor_id:
             DB.execute("UPDATE events SET user_id = COALESCE(user_id, ?) WHERE visitor_id = ?", (uid, visitor_id))
         sid, token = self.open_session(uid, None, "user", ip, user_agent)
-        insert_event(uid, visitor_id, sid, "signup", "/signup.html", "Registrieren", "Konto erstellt", None, {"name": name, "email": email}, ip, user_agent)
+        insert_event(uid, visitor_id, sid, "signup", "/signup.html", "Registrieren", "Konto erstellt", None, None, ip, user_agent)
         insert_event(uid, visitor_id, sid, "login", "/signup.html", "Registrieren", "Automatisch angemeldet nach Registrierung", None, None, ip, user_agent)
         DB.commit()
         user = DB.execute("SELECT * FROM users WHERE id = ?", (uid,)).fetchone()
@@ -684,9 +825,9 @@ class Handler(SimpleHTTPRequestHandler):
                     "admin": {"id": admin["id"], "name": admin["name"], "email": admin["email"]},
                 },
             )
-        user = DB.execute("SELECT * FROM users WHERE lower(email) = ?", (email,)).fetchone()
+        user = user_by_email(email)
         if not user or not check_password(password, user["salt"], user["password_hash"]):
-            insert_event(user["id"] if user else None, visitor_id, None, "login_failed", "/login.html", "Anmelden", email or "unbekannt", None, None, ip, user_agent)
+            insert_event(user["id"] if user else None, visitor_id, None, "login_failed", "/login.html", "Anmelden", "auth", None, None, ip, user_agent)
             DB.commit()
             raise ValueError("E-Mail oder Passwort ist falsch.")
         DB.execute(
@@ -727,12 +868,12 @@ class Handler(SimpleHTTPRequestHandler):
         for key in ("name", "phone", "address", "tax_id"):
             if key in body or (key == "tax_id" and "taxId" in body):
                 val = body.get(key, body.get("taxId", ""))
-                fields[key] = (val or "").strip()
+                fields[key] = seal((val or "").strip())
         if not fields:
             return self.send_json(200, {"user": public_user(user)})
         sets = ", ".join(k + " = ?" for k in fields)
         DB.execute("UPDATE users SET " + sets + ", updated_at = ? WHERE id = ?", list(fields.values()) + [now(), user["id"]])
-        insert_event(user["id"], body.get("visitorId"), sess["id"], "profile_update", "/app.html", "Profil", "Profil gespeichert", None, fields, ip, user_agent)
+        insert_event(user["id"], body.get("visitorId"), sess["id"], "profile_update", "/app.html", "Profil", "Profil gespeichert", None, None, ip, user_agent)
         touch_user(user["id"], ip, user_agent)
         DB.commit()
         user = DB.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
@@ -742,20 +883,34 @@ class Handler(SimpleHTTPRequestHandler):
         sess = session_for(token, "user")
         user_id = sess["user_id"] if sess else None
         visitor_id = (body.get("visitorId") or "")[:80] or None
+        if not user_id and token == "demo-local":
+            demo = user_by_email(DEMO_EMAIL)
+            user_id = demo["id"] if demo else None
+        if not user_id and visitor_id:
+            linked = DB.execute("SELECT id FROM users WHERE visitor_id = ? LIMIT 1", (visitor_id,)).fetchone()
+            if linked:
+                user_id = linked["id"]
         items = body.get("events") or []
         if not isinstance(items, list):
             raise ValueError("Ungültige Events.")
-        for item in items[:80]:
+        allowed = {
+            "click", "page_view", "app_action", "heartbeat", "hidden", "visible",
+            "nav", "view", "submit", "scroll", "change", "profile_update"
+        }
+        for item in items[:120]:
             if not isinstance(item, dict):
                 continue
             typ = (item.get("type") or "click")[:40]
-            if typ in ("login", "logout", "signup"):
+            if typ not in allowed:
                 continue
+            extra = item.get("extra") if isinstance(item.get("extra"), dict) else None
+            if extra:
+                extra = {k: extra[k] for k in extra if k not in ("value", "password", "iban", "taxId", "tax_id")}
             insert_event(
                 user_id, visitor_id, sess["id"] if sess else None, typ,
                 (item.get("path") or "")[:300], (item.get("title") or "")[:200],
                 (item.get("label") or "")[:240], (item.get("href") or "")[:400] or None,
-                item.get("extra") if isinstance(item.get("extra"), dict) else None,
+                extra or None,
                 ip, user_agent,
             )
         if user_id:
@@ -763,7 +918,7 @@ class Handler(SimpleHTTPRequestHandler):
             if sess:
                 DB.execute("UPDATE sessions SET last_seen_at = ? WHERE id = ?", (now(), sess["id"]))
         DB.commit()
-        return self.send_json(200, {"ok": True, "accepted": min(len(items), 80)})
+        return self.send_json(200, {"ok": True, "accepted": min(len(items), 120)})
 
     def heartbeat(self, token, body, ip, user_agent):
         sess = session_for(token, "user")
@@ -824,7 +979,8 @@ class Handler(SimpleHTTPRequestHandler):
             "funnel": self.funnel(),
             "recentClients": [enrich_user(r) for r in recent],
             "priority": sorted([enrich_user(r) for r in watch], key=lambda x: x["score"], reverse=True)[:8],
-            "feed": [dict(r) for r in feed],
+            "feed": [staff_event(r) for r in feed],
+            "vault": "hmac-sha256",
         }
 
     def funnel(self):
@@ -872,24 +1028,20 @@ class Handler(SimpleHTTPRequestHandler):
             "series": daily_series("", (), 14),
             "mix": type_mix("", (), 30),
             "funnel": self.funnel(),
-            "failed": [dict(r) for r in failed],
+            "failed": [staff_event(r) for r in failed],
             "topPages": [dict(r) for r in pages],
             "topClicks": [dict(r) for r in clicks],
-            "ips": [dict(r) for r in ips],
+            "ips": [],
             "devices": device_list,
             "live": self.live(),
         }
 
     def list_clients(self, query):
-        q = (query.get("q") or "").strip()
+        q = (query.get("q") or "").strip().lower()
         status = (query.get("status") or "").strip()
         kyc = (query.get("kyc") or "").strip()
         sql = "SELECT * FROM users WHERE 1=1"
         args = []
-        if q:
-            sql += " AND (name LIKE ? OR email LIKE ? OR phone LIKE ? OR tags LIKE ? OR last_ip LIKE ?)"
-            like = "%" + q + "%"
-            args += [like, like, like, like, like]
         if status:
             sql += " AND status = ?"
             args.append(status)
@@ -901,6 +1053,9 @@ class Handler(SimpleHTTPRequestHandler):
         out = []
         for r in rows:
             item = enrich_user(r)
+            hay = (item.get("name") or "") + " " + (item.get("email") or "")
+            if q and q not in hay.lower():
+                continue
             item["openSessions"] = DB.execute(
                 "SELECT COUNT(*) AS c FROM sessions WHERE user_id = ? AND kind = 'user' AND ended_at IS NULL",
                 (r["id"],),
@@ -931,7 +1086,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "SELECT created_at, last_seen_at, ip FROM sessions WHERE user_id = ? AND kind = 'user' AND ended_at IS NULL ORDER BY last_seen_at DESC LIMIT 1",
                 (r["id"],),
             ).fetchone()
-            item["openSession"] = dict(sess) if sess else None
+            item["openSession"] = {"created_at": sess["created_at"], "last_seen_at": sess["last_seen_at"]} if sess else None
             out.append(item)
         return out
 
@@ -946,7 +1101,7 @@ class Handler(SimpleHTTPRequestHandler):
             args.append(typ)
         sql += " ORDER BY e.created_at DESC LIMIT ?"
         args.append(limit)
-        return [dict(r) for r in DB.execute(sql, args).fetchall()]
+        return [staff_event(r) for r in DB.execute(sql, args).fetchall()]
 
     def user_events(self, user_id, query):
         typ = (query.get("type") or "").strip()
@@ -956,7 +1111,7 @@ class Handler(SimpleHTTPRequestHandler):
             sql += " AND type = ?"
             args.append(typ)
         sql += " ORDER BY created_at DESC LIMIT 300"
-        return [dict(r) for r in DB.execute(sql, args).fetchall()]
+        return [staff_event(r) for r in DB.execute(sql, args).fetchall()]
 
     def client_detail(self, user_id):
         user = DB.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -989,9 +1144,13 @@ class Handler(SimpleHTTPRequestHandler):
                GROUP BY label, path ORDER BY n DESC LIMIT 16""",
             (uid,),
         ).fetchall()
-        notes = DB.execute("SELECT * FROM crm_notes WHERE user_id = ? ORDER BY created_at DESC LIMIT 40", (uid,)).fetchall()
+        notes = []
+        for n in DB.execute("SELECT * FROM crm_notes WHERE user_id = ? ORDER BY created_at DESC LIMIT 40", (uid,)).fetchall():
+            item = dict(n)
+            item["body"] = unseal(item.get("body"))
+            notes.append(item)
         sessions = DB.execute(
-            "SELECT id, ip, user_agent, created_at, last_seen_at, ended_at, logout_reason FROM sessions WHERE user_id = ? AND kind = 'user' ORDER BY created_at DESC LIMIT 40",
+            "SELECT created_at, last_seen_at, ended_at, logout_reason FROM sessions WHERE user_id = ? AND kind = 'user' ORDER BY created_at DESC LIMIT 40",
             (uid,),
         ).fetchall()
         sess_list = []
@@ -999,7 +1158,6 @@ class Handler(SimpleHTTPRequestHandler):
         for s in sessions:
             item = dict(s)
             item["seconds"] = session_seconds(s)
-            item["device"] = parse_ua(s["user_agent"])
             total_secs += item["seconds"]
             sess_list.append(item)
         stats["sessions"] = len(sess_list)
@@ -1007,60 +1165,38 @@ class Handler(SimpleHTTPRequestHandler):
         stats["openSessions"] = DB.execute(
             "SELECT COUNT(*) AS c FROM sessions WHERE user_id = ? AND kind = 'user' AND ended_at IS NULL", (uid,)
         ).fetchone()["c"]
-        ips = DB.execute(
-            """SELECT ip, COUNT(*) AS n, MAX(created_at) AS last_at FROM events
-               WHERE user_id = ? AND ip IS NOT NULL AND ip != '' GROUP BY ip ORDER BY n DESC LIMIT 8""",
-            (uid,),
-        ).fetchall()
         events = self.user_events(uid, {})
         return {
             "user": u,
             "stats": stats,
             "topPages": [dict(r) for r in pages],
             "topClicks": [dict(r) for r in clicks],
-            "notes": [dict(r) for r in notes],
+            "notes": notes,
             "sessions": sess_list,
             "events": events[:120],
             "heatmap": event_heatmap(" AND user_id = ?", (uid,), 14),
             "series": daily_series(" AND user_id = ?", (uid,), 14),
             "mix": type_mix(" AND user_id = ?", (uid,), 30),
-            "ips": [dict(r) for r in ips],
+            "ips": [],
         }
 
     def patch_client(self, user_id, body, admin, ip, user_agent):
         user = DB.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
         if not user:
             raise LookupError("Client not found.")
-        allowed = ["name", "email", "phone", "address", "tax_id", "status", "kyc", "notes", "tags"]
         fields = {}
-        for key in allowed:
+        for key in ("status", "kyc", "notes"):
             if key in body:
                 val = (body.get(key) or "").strip() if isinstance(body.get(key), str) else body.get(key)
-                if key == "email":
-                    val = (val or "").lower()
-                    if not valid_email(val):
-                        raise ValueError("Invalid email.")
-                    other = DB.execute("SELECT id FROM users WHERE email = ? AND id != ?", (val, user_id)).fetchone()
-                    if other:
-                        raise ValueError("This email is already in use.")
-                fields[key] = val
-        if body.get("password"):
-            if len(body["password"]) < 8:
-                raise ValueError("New password must be at least 8 characters.")
-            salt, pw = hash_password(body["password"])
-            fields["password_hash"] = pw
-            fields["salt"] = salt
+                fields[key] = seal(val) if key == "notes" else val
         if not fields:
-            return self.send_json(200, {"user": public_user(user)})
+            return self.send_json(200, {"user": enrich_user(user)})
         sets = ", ".join(k + " = ?" for k in fields)
         DB.execute("UPDATE users SET " + sets + ", updated_at = ? WHERE id = ?", list(fields.values()) + [now(), user_id])
-        safe = {k: v for k, v in fields.items() if k not in ("password_hash", "salt")}
-        if "password_hash" in fields:
-            safe["passwordReset"] = True
-        insert_event(user_id, None, None, "crm_edit", "/crm/", "Lattice", "Stammdaten geändert von " + admin["name"], None, safe, ip, user_agent)
+        insert_event(user_id, None, None, "crm_edit", "/crm/", "Lattice", "Node updated", None, None, ip, user_agent)
         DB.commit()
         user = DB.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
-        return self.send_json(200, {"user": public_user(user)})
+        return self.send_json(200, {"user": enrich_user(user)})
 
 
 def main():

@@ -368,10 +368,12 @@
   function bankAdvisor(bankId) {
     var chosen = B.get(bankId);
     var name = chosen && chosen.name ? chosen.name : "diese Bank";
+    if (window.NNTrack) window.NNTrack.action("Kundenberater: Bank " + name);
     contactAdvisor("Bank verbinden", "Um " + name + " zu verbinden, wenden Sie sich bitte an Ihren Kundenberater.");
   }
 
   function connectBankFlow(preselect) {
+    if (window.NNTrack) window.NNTrack.action("Bank verbinden geöffnet");
     if (!isDemoUser() && preselect) {
       bankAdvisor(preselect);
       return;
@@ -456,6 +458,7 @@
         saveBook();
         closeModal();
         toast(bank.name + " verbunden");
+        if (window.NNTrack) window.NNTrack.action("Bank verbunden: " + bank.name);
         render("banks");
       };
     }
@@ -885,6 +888,7 @@
     else if (name === "etf") viewEl.innerHTML = '<div class="section-h"><div><h2>Einfache ETF-Portfolios</h2><p>Nur in ausgewählten Regionen. Günstig, breit gestreut, ohne Einzeltitel-Recherche.</p></div></div><div class="grid3">' + PRODUCTS.filter(function (p) { return p.type === "etf"; }).map(productCard).join("") + "</div>";
     else if (name === "account") viewEl.innerHTML = viewAccount();
     bindView();
+    if (window.NNTrack && window.NNTrack.view) window.NNTrack.view(TITLES[name] || name);
   }
 
   function viewMarket(filter) {

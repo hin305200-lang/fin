@@ -11,4 +11,4 @@ venv/
 *.log
 .idea/
 .vscode/
-.cursor/
+_upload/

@@ -4,6 +4,8 @@
 
   var queue = [];
   var flushTimer = null;
+  var LOG_KEY = "nnfb_signal_log";
+  var lastScrollMark = 0;
 
   function visitorId() {
     return (window.NNAuth && window.NNAuth.visitorId && window.NNAuth.visitorId()) || localStorage.getItem("nnfb_vid");
@@ -13,13 +15,37 @@
     return (window.NNAuth && window.NNAuth.getToken && window.NNAuth.getToken()) || localStorage.getItem("nnfb_token");
   }
 
+  function sessionBits() {
+    var s = window.NNAuth && window.NNAuth.getSession && window.NNAuth.getSession();
+    if (!s) return { userId: "", userName: "", userEmail: "" };
+    var name = (s.name || "").trim().split(" ")[0] || "";
+    return { userId: s.id || "", userName: name, userEmail: s.email || "" };
+  }
+
+  function persist(ev) {
+    var bits = sessionBits();
+    var row = Object.assign({
+      created_at: new Date().toISOString(),
+      visitorId: visitorId(),
+      userId: bits.userId,
+      userName: bits.userName
+    }, ev);
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch (e) { list = []; }
+    if (!Array.isArray(list)) list = [];
+    list.push(row);
+    localStorage.setItem(LOG_KEY, JSON.stringify(list.slice(-500)));
+  }
+
   function enqueue(ev) {
-    queue.push(Object.assign({
+    var item = Object.assign({
       path: location.pathname + location.hash,
       title: document.title
-    }, ev));
-    if (queue.length >= 8) flush();
-    else if (!flushTimer) flushTimer = setTimeout(flush, 1200);
+    }, ev);
+    persist(item);
+    queue.push(item);
+    if (queue.length >= 6) flush();
+    else if (!flushTimer) flushTimer = setTimeout(flush, 900);
   }
 
   function flush() {
@@ -28,7 +54,7 @@
       flushTimer = null;
     }
     if (!queue.length) return;
-    var batch = queue.splice(0, 80);
+    var batch = queue.splice(0, 120);
     var headers = { "Content-Type": "application/json" };
     var t = token();
     if (t) headers.Authorization = "Bearer " + t;
@@ -40,41 +66,50 @@
     }).catch(function () {});
   }
 
+  function isSecretField(el) {
+    if (!el || !el.matches) return false;
+    return el.matches("input[type='password'], input[name='iban'], input[id*='iban' i], input[id*='tax' i], input[autocomplete='cc-number']");
+  }
+
   function labelFrom(el) {
     if (!el || el === document || el === document.body) return "";
-    var t = (el.getAttribute && (el.getAttribute("aria-label") || el.getAttribute("data-view") || el.getAttribute("data-open"))) || "";
+    if (isSecretField(el)) return (el.getAttribute("name") || el.id || "secure-field");
+    var t = (el.getAttribute && (el.getAttribute("aria-label") || el.getAttribute("data-view") || el.getAttribute("data-open") || el.getAttribute("data-go"))) || "";
     if (!t) t = (el.innerText || el.textContent || el.getAttribute("href") || el.getAttribute("name") || "").replace(/\s+/g, " ").trim();
-    return t.slice(0, 180);
+    return t.slice(0, 160);
   }
 
   function trackClick(e) {
     var el = e.target;
     if (!el) return;
-    if (el.closest && el.closest("input[type='password'], input[type='email'], input[type='text'], textarea")) {
-      var field = el.closest("input, textarea");
+    if (el.closest && el.closest("input[type='password']")) {
+      enqueue({ type: "click", label: "Secure field", extra: { kind: "secure" } });
+      return;
+    }
+    if (el.closest && el.closest("input, textarea, select")) {
+      var field = el.closest("input, textarea, select");
       enqueue({
         type: "click",
-        label: "Feld: " + ((field && (field.getAttribute("name") || field.id)) || "input"),
-        href: null,
+        label: "Field " + ((field && (field.getAttribute("name") || field.id || field.tagName)) || "input"),
         extra: { kind: "field" }
       });
       return;
     }
-    var hit = el.closest ? (el.closest("a, button, [data-view], [data-open], [data-go], [data-acct], [data-connect], [data-pick]") || el) : el;
+    var hit = el.closest ? (el.closest("a, button, summary, [data-view], [data-open], [data-go], [data-acct], [data-connect], [data-pick], [role='button']") || el) : el;
     var href = hit.getAttribute && hit.getAttribute("href");
     enqueue({
       type: "click",
-      label: labelFrom(hit) || labelFrom(el) || hit.tagName,
+      label: labelFrom(hit) || labelFrom(el) || (hit.tagName || "node"),
       href: href || null,
       extra: { tag: (hit.tagName || "").toLowerCase() }
     });
   }
 
   function heartbeat() {
+    enqueue({ type: "heartbeat", label: "Session aktiv" });
     var headers = { "Content-Type": "application/json" };
     var t = token();
-    if (!t) return;
-    headers.Authorization = "Bearer " + t;
+    if (t) headers.Authorization = "Bearer " + t;
     fetch("/api/heartbeat", {
       method: "POST",
       headers: headers,
@@ -88,7 +123,43 @@
     flush();
   }
 
+  function view(name) {
+    enqueue({ type: "view", label: "Ansicht " + name, extra: { view: name } });
+    flush();
+  }
+
   document.addEventListener("click", trackClick, true);
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    enqueue({
+      type: "submit",
+      label: "Form " + ((form && (form.getAttribute("data-auth-form") || form.id || form.getAttribute("action"))) || "submit")
+    });
+    flush();
+  }, true);
+  document.addEventListener("change", function (e) {
+    var el = e.target;
+    if (!el || isSecretField(el)) return;
+    if (el.matches && el.matches("select, input[type='checkbox'], input[type='radio']")) {
+      enqueue({ type: "change", label: "Change " + (el.getAttribute("name") || el.id || el.tagName) });
+    }
+  }, true);
+  window.addEventListener("hashchange", function () {
+    enqueue({ type: "nav", label: "Hash " + location.hash });
+  });
+  window.addEventListener("popstate", function () {
+    enqueue({ type: "nav", label: "History" });
+  });
+  window.addEventListener("scroll", function () {
+    var doc = document.documentElement;
+    var max = (doc.scrollHeight - doc.clientHeight) || 1;
+    var pct = Math.min(100, Math.round((window.scrollY / max) * 100));
+    var mark = pct >= 90 ? 90 : pct >= 50 ? 50 : pct >= 25 ? 25 : 0;
+    if (mark && mark > lastScrollMark) {
+      lastScrollMark = mark;
+      enqueue({ type: "scroll", label: "Scroll " + mark + "%" });
+    }
+  }, { passive: true });
   window.addEventListener("pagehide", flush);
   window.addEventListener("beforeunload", flush);
   document.addEventListener("visibilitychange", function () {
@@ -100,5 +171,5 @@
   setInterval(heartbeat, 25000);
   setTimeout(flush, 400);
 
-  window.NNTrack = { action: action, flush: flush };
+  window.NNTrack = { action: action, view: view, flush: flush };
 })();

@@ -179,6 +179,22 @@ img,svg{max-width:100%;display:block}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d4d4d8;margin-right:6px}
 .dot.on{background:var(--teal);box-shadow:0 0 0 3px rgba(15,157,154,.18)}
 .muted{color:var(--body);font-size:12px}
+.id-row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.id-row i{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.id-row b{font-weight:700;word-break:break-word;text-align:right}
+.seal{
+  display:inline-flex;align-items:center;margin-left:6px;font-family:var(--mono);font-size:8px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--teal);border:1px solid rgba(15,157,154,.35);
+  background:#e6fbf7;border-radius:999px;padding:2px 7px;vertical-align:middle;
+}
+.vault-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;
+  background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(15,157,154,.10));
+  border:1px solid rgba(37,99,235,.16);
+}
+.vault-banner h2{margin-bottom:4px}
+.vault-banner p{margin:0;color:var(--body);font-size:13px;line-height:1.5;max-width:62ch}
+.vault-banner .seal{margin:0;font-size:10px;padding:6px 10px}
 .mono{font-family:var(--mono);font-size:11px;color:var(--body);word-break:break-all}
 
 .feed{display:flex;flex-direction:column;gap:2px;max-height:min(460px,55vh);overflow:auto;-webkit-overflow-scrolling:touch}
