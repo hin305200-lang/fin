@@ -138,16 +138,13 @@ def init_db() -> None:
 
 
 def seed() -> None:
+    email = ADMIN_EMAIL.strip().lower()
     salt, pw = hash_password(ADMIN_PASSWORD)
-    existing = DB.execute("SELECT id FROM admins WHERE email = ?", (ADMIN_EMAIL,)).fetchone()
-    if existing:
-        DB.execute("UPDATE admins SET password_hash = ?, salt = ?, name = ? WHERE email = ?", (pw, salt, "Thomas", ADMIN_EMAIL))
-    else:
-        DB.execute(
-            "INSERT INTO admins (id, name, email, password_hash, salt, created_at) VALUES (?,?,?,?,?,?)",
-            (new_id(), "Thomas", ADMIN_EMAIL, pw, salt, now()),
-        )
-    DB.execute("DELETE FROM admins WHERE email = ?", ("admin@nnfinanz.de",))
+    DB.execute("DELETE FROM admins")
+    DB.execute(
+        "INSERT INTO admins (id, name, email, password_hash, salt, created_at) VALUES (?,?,?,?,?,?)",
+        (new_id(), "Thomas", email, pw, salt, now()),
+    )
     if not DB.execute("SELECT id FROM users WHERE email = ?", (DEMO_EMAIL,)).fetchone():
         salt, pw = hash_password(DEMO_PASSWORD)
         uid = "demo-test-user"
@@ -415,6 +412,17 @@ def valid_email(email: str) -> bool:
     return bool(re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email or ""))
 
 
+def admin_by_credentials(email: str, password: str):
+    email = (email or "").strip().lower()
+    password = (password or "").strip()
+    if not email or not password:
+        return None
+    admin = DB.execute("SELECT * FROM admins WHERE lower(email) = ?", (email,)).fetchone()
+    if not admin or not check_password(password, admin["salt"], admin["password_hash"]):
+        return None
+    return admin
+
+
 def insert_event(user_id, visitor_id, session_id, typ, path, title, label, href, extra, ip, user_agent):
     extra_s = json.dumps(extra, ensure_ascii=False) if extra else None
     DB.execute(
@@ -633,9 +641,21 @@ class Handler(SimpleHTTPRequestHandler):
 
     def login(self, body, ip, user_agent):
         email = (body.get("email") or "").strip().lower()
-        password = body.get("password") or ""
+        password = (body.get("password") or "").strip()
         visitor_id = (body.get("visitorId") or "")[:80]
-        user = DB.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        admin = admin_by_credentials(email, password)
+        if admin:
+            sid, token = self.open_session(None, admin["id"], "admin", ip, user_agent)
+            DB.commit()
+            return self.send_json(
+                200,
+                {
+                    "kind": "staff",
+                    "token": token,
+                    "admin": {"id": admin["id"], "name": admin["name"], "email": admin["email"]},
+                },
+            )
+        user = DB.execute("SELECT * FROM users WHERE lower(email) = ?", (email,)).fetchone()
         if not user or not check_password(password, user["salt"], user["password_hash"]):
             insert_event(user["id"] if user else None, visitor_id, None, "login_failed", "/login.html", "Anmelden", email or "unbekannt", None, None, ip, user_agent)
             DB.commit()
@@ -726,9 +746,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def admin_login(self, body, ip, user_agent):
         email = (body.get("email") or "").strip().lower()
-        password = body.get("password") or ""
-        admin = DB.execute("SELECT * FROM admins WHERE email = ?", (email,)).fetchone()
-        if not admin or not check_password(password, admin["salt"], admin["password_hash"]):
+        password = (body.get("password") or "").strip()
+        admin = admin_by_credentials(email, password)
+        if not admin:
             raise ValueError("Email or password is incorrect.")
         sid, token = self.open_session(None, admin["id"], "admin", ip, user_agent)
         DB.commit()
