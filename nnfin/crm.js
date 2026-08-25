@@ -530,8 +530,16 @@
 
   window.NNCRM = { enter: enter };
 
-  setToken(null);
   document.getElementById("admEmail").value = "";
   document.getElementById("admPass").value = "";
-  showGate();
+  if (token()) {
+    api("/api/admin/overview").then(function () {
+      enter();
+    }).catch(function () {
+      setToken(null);
+      showGate();
+    });
+  } else {
+    showGate();
+  }
 })();

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="crm.css?v=9">
+<link rel="stylesheet" href="crm.css?v=10">
 </head>
 <body>
 <div class="fx" aria-hidden="true"></div>
@@ -18,7 +18,7 @@
     <h1>Authorize</h1>
     <p>Staff node. Client telemetry, presence, and dossiers.</p>
     <p class="err" id="gateErr" hidden></p>
-    <form id="admForm" autocomplete="off">
+    <form id="admForm" method="post" action="#" autocomplete="off">
       <label for="admEmail">Email</label>
       <input id="admEmail" name="staff_user" type="text" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false" value="" required>
       <label for="admPass">Password</label>
@@ -68,6 +68,6 @@
     <div class="body" id="view"></div>
   </main>
 </div>
-<script src="crm.js?v=9"></script>
+<script src="crm.js?v=10"></script>
 </body>
 </html>

@@ -104,6 +104,12 @@
         visitorId: visitorId()
       }
     }).then(function (res) {
+      if (res.kind === "staff" && res.token && res.admin) {
+        localStorage.setItem("nnfb_crm_token", res.token);
+        localStorage.setItem("nnfb_crm_who", res.admin.name + " · " + res.admin.email);
+        window.location.replace("crm.html");
+        return { staff: true };
+      }
       setSession(toSession(res.user), res.token);
       return res.user;
     });
@@ -210,7 +216,8 @@
         login({
           email: loginForm.email.value,
           password: loginForm.password.value
-        }).then(function () {
+        }).then(function (user) {
+          if (user && user.staff) return;
           window.location.href = "app.html";
         }).catch(function (err) {
           showError(loginForm, err.message || "Anmeldung nicht möglich.");
