@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NN Finanz — Lattice CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="crm.css?v=9">
+</head>
+<body>
+<div class="fx" aria-hidden="true"></div>
+
+<div id="gate" class="gate open">
+  <div class="gate-card">
+    <div class="brand"><span class="pulse"></span>NN Finanz · Lattice</div>
+    <h1>Authorize</h1>
+    <p>Staff node. Client telemetry, presence, and dossiers.</p>
+    <p class="err" id="gateErr" hidden></p>
+    <form id="admForm" autocomplete="off">
+      <label for="admEmail">Email</label>
+      <input id="admEmail" name="staff_user" type="text" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false" value="" required>
+      <label for="admPass">Password</label>
+      <input id="admPass" name="staff_pass" type="password" autocomplete="new-password" value="" required>
+      <button type="submit" id="admGo">Enter lattice</button>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="crm">
+  <aside class="side">
+    <div class="side-brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="4" fill="url(#lgc)"/><rect x="10" y="10" width="12" height="12" rx="4" fill="url(#lgc)" opacity=".55"/><defs><linearGradient id="lgc" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#0f9d9a"/></linearGradient></defs></svg>
+      <div>NN Finanz<span>Lattice</span></div>
+    </div>
+    <button class="nav on" data-view="home">Lattice</button>
+    <button class="nav" data-view="clients">Nodes</button>
+    <button class="nav" data-view="live">Presence</button>
+    <button class="nav" data-view="feed">Stream</button>
+    <button class="nav" data-view="intel">Intel</button>
+    <div class="side-foot">
+      <div class="who-kicker">Operator</div>
+      <div id="admWho">—</div>
+      <button type="button" id="admOut">Sign out</button>
+      <a href="index.html">Public site</a>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <div>
+        <div class="kicker" id="kicker">Command surface</div>
+        <h1 id="title">Lattice</h1>
+      </div>
+      <div class="top-meta">
+        <div class="chip-live"><span class="pulse"></span><span id="signal">STANDBY</span></div>
+        <time id="clock">--:--:--</time>
+        <input id="globalQ" placeholder="Search nodes, email, IP…">
+      </div>
+    </header>
+    <nav class="m-nav" aria-label="CRM sections">
+      <button class="nav on" data-view="home">Lattice</button>
+      <button class="nav" data-view="clients">Nodes</button>
+      <button class="nav" data-view="live">Presence</button>
+      <button class="nav" data-view="feed">Stream</button>
+      <button class="nav" data-view="intel">Intel</button>
+    </nav>
+    <div class="body" id="view"></div>
+  </main>
+</div>
+<script src="crm.js?v=9"></script>
+</body>
+</html>

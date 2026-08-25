@@ -1,0 +1,13 @@
+GITHUB UPLOAD — do not drag a folder
+
+GitHub’s website goes white if you drop a folder (especially nnfin, which contains .git).
+
+Do this instead:
+
+1. On GitHub: your empty repo → Add file → Upload files
+2. In Finder, open the folder nnfin-github-files (in Downloads)
+3. Click once in that window, then press Command-A (select all files)
+4. Drag the selected files onto GitHub’s dashed box — not the folder icon
+5. Wait until the file names appear in the list, then click Commit changes
+
+If it still goes white: use Chrome (not Safari), turn off ad blockers on github.com, and try the “choose your files” button instead of drag-and-drop.
