@@ -1,6 +1,5 @@
 (function () {
   "use strict";
-  if (/crm\.html/i.test(location.pathname)) return;
 
   var queue = [];
   var flushTimer = null;
