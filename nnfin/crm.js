@@ -293,7 +293,7 @@
     });
     var hours = "<b></b>";
     for (var h = 0; h < 24; h += 1) hours += "<span>" + (h % 3 === 0 ? h : "") + "</span>";
-    return '<div class="heat">' + html + '</div><div class="hours">' + hours + "</div>";
+    return '<div class="heat-wrap"><div class="heat">' + html + '</div><div class="hours">' + hours + "</div></div>";
   }
   function funnelHtml(f) {
     f = f || {};
