@@ -279,17 +279,21 @@
     if (onReady) onReady(wrap.querySelector(".modal"));
   }
 
+  function contactAdvisor(title, body) {
+    openModal(
+      "<h3>" + title + "</h3>" +
+      "<p>" + body + "</p>" +
+      "<p>NN-Finanzberatung GmbH<br>+4915215729944</p>" +
+      '<div class="actions"><button class="btn btn-dark" id="advOk">Schließen</button></div>',
+      function (modal) {
+        modal.querySelector("#advOk").onclick = closeModal;
+      }
+    );
+  }
+
   function depositFlow() {
     if (!isDemoUser()) {
-      openModal(
-        "<h3>Einzahlen</h3>" +
-        "<p>Um Guthaben einzuzahlen, wenden Sie sich bitte an Ihren Kundenberater.</p>" +
-        "<p>NN-Finanzberatung GmbH<br>+4915215729944</p>" +
-        '<div class="actions"><button class="btn btn-dark" id="depOk">Schließen</button></div>',
-        function (modal) {
-          modal.querySelector("#depOk").onclick = closeModal;
-        }
-      );
+      contactAdvisor("Einzahlen", "Um Guthaben einzuzahlen, wenden Sie sich bitte an Ihren Kundenberater.");
       return;
     }
     var opts = accounts().map(function (a) {
@@ -361,7 +365,17 @@
     );
   }
 
+  function bankAdvisor(bankId) {
+    var chosen = B.get(bankId);
+    var name = chosen && chosen.name ? chosen.name : "diese Bank";
+    contactAdvisor("Bank verbinden", "Um " + name + " zu verbinden, wenden Sie sich bitte an Ihren Kundenberater.");
+  }
+
   function connectBankFlow(preselect) {
+    if (!isDemoUser() && preselect) {
+      bankAdvisor(preselect);
+      return;
+    }
     var step = preselect ? 2 : 1;
     var picked = preselect || null;
     var q = "";
@@ -372,7 +386,10 @@
           return book.linkedBanks.indexOf(b.id) < 0 &&
             (!q || (b.name + " " + b.country + " " + b.kind).toLowerCase().indexOf(q.toLowerCase()) >= 0);
         });
-        modal.innerHTML = "<h3>Bank verbinden</h3><p>Simuliertes Open Banking — keine echte Anmeldung bei der Bank.</p>" +
+        var intro = isDemoUser()
+          ? "Simuliertes Open Banking — keine echte Anmeldung bei der Bank."
+          : "Wählen Sie Ihre Bank. Die Verbindung richtet Ihr Kundenberater ein.";
+        modal.innerHTML = "<h3>Bank verbinden</h3><p>" + intro + "</p>" +
           '<div class="field"><input id="bkSearch" placeholder="Bank suchen — HSBC, Deutsche Bank, N26…" value="' + q + '"></div>' +
           '<div class="connect-grid">' + list.map(function (b) {
             return '<button class="bank-tile" type="button" data-pick="' + b.id + '">' + B.logo(b.id, 40) + "<b>" + b.name + "</b><i>" + b.country + "</i></button>";
@@ -383,7 +400,16 @@
         search.focus();
         search.oninput = function () { q = search.value; paint(modal); };
         modal.querySelectorAll("[data-pick]").forEach(function (btn) {
-          btn.onclick = function () { picked = btn.getAttribute("data-pick"); step = 2; paint(modal); };
+          btn.onclick = function () {
+            picked = btn.getAttribute("data-pick");
+            if (!isDemoUser()) {
+              closeModal();
+              bankAdvisor(picked);
+              return;
+            }
+            step = 2;
+            paint(modal);
+          };
         });
         return;
       }
@@ -414,6 +440,11 @@
         '<div class="actions"><button class="btn btn-dark" id="bkGo">Verbinden</button><button class="btn btn-outline" id="bkBack">Zurück</button></div>';
       modal.querySelector("#bkBack").onclick = function () { step = 2; paint(modal); };
       modal.querySelector("#bkGo").onclick = function () {
+        if (!isDemoUser()) {
+          closeModal();
+          bankAdvisor(bank.id);
+          return;
+        }
         var types = Array.prototype.slice.call(modal.querySelectorAll("input[data-type]:checked")).map(function (el) { return el.getAttribute("data-type"); });
         if (!types.length) return toast("Bitte mindestens ein Konto wählen.");
         var created = B.makeAccounts(bank.id, types);
@@ -648,7 +679,11 @@
           '<div class="bank-side"><div class="amt">' + eur(sum) + "</div>" +
           '<div class="acct-actions"><button class="btn btn-outline btn-sm" data-sync="' + b.id + '">Sync</button><button class="btn btn-outline btn-sm" data-unlink="' + b.id + '">Trennen</button></div></div></article>';
       }).join("") + "</div>" : '<div class="card empty"><b>Noch keine Bank verbunden</b>Verbinden Sie HSBC, Deutsche Bank, N26 und weitere Institute.</div>') +
-      '<div class="section-h"><div><h2>Institute hinzufügen</h2><p>HSBC, Deutsche Bank, Sparkasse, Neobanken — Demo-Logos und simulierte Konten.</p></div></div>' +
+      '<div class="section-h"><div><h2>Institute hinzufügen</h2><p>' +
+      (isDemoUser()
+        ? "HSBC, Deutsche Bank, Sparkasse, Neobanken — Demo-Logos und simulierte Konten."
+        : "Wählen Sie Ihre Bank. Die Verbindung richtet Ihr Kundenberater ein.") +
+      "</p></div></div>" +
       '<div class="field search-field"><input id="bankFilter" placeholder="Bank suchen…" value="' + q + '"></div>' +
       '<div class="connect-grid page">' + available.map(function (b) {
         return '<button class="bank-tile" type="button" data-pick="' + b.id + '">' + B.logo(b.id, 44) + "<b>" + b.name + "</b><i>" + b.kind + " · " + b.country + "</i></button>";
