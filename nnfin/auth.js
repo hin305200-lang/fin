@@ -130,8 +130,47 @@
     });
   }
 
+  function probeLive() {
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 800);
+    return fetch("/api/health", { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+      .then(function (res) {
+        clearTimeout(timer);
+        if (!res.ok) return false;
+        return res.json().then(function (data) { return !!(data && data.ok); }).catch(function () { return false; });
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        return false;
+      });
+  }
+
+  function enterStaff(admin, token) {
+    localStorage.setItem("nnfb_crm_token", token);
+    localStorage.setItem("nnfb_crm_who", admin.name + " · " + admin.email);
+    window.location.replace("crm/");
+    return { staff: true };
+  }
+
   function login(data) {
     var creds = demoCreds(data.email, data.password);
+    var staff = (creds.email === "admin@admin.com" && creds.password === "admin305@@@")
+      ? { name: "Thomas", email: creds.email }
+      : null;
+    if (staff) {
+      return probeLive().then(function (up) {
+        if (!up) return enterStaff(staff, DEMO_TOKEN);
+        return api("/api/login", {
+          method: "POST",
+          body: { email: creds.email, password: creds.password, visitorId: visitorId() }
+        }).then(function (res) {
+          if (res.kind === "staff" && res.token && res.admin) return enterStaff(res.admin, res.token);
+          return enterStaff(staff, DEMO_TOKEN);
+        }).catch(function () {
+          return enterStaff(staff, DEMO_TOKEN);
+        });
+      });
+    }
     return api("/api/login", {
       method: "POST",
       body: {
@@ -141,23 +180,12 @@
       }
     }).then(function (res) {
       if (res.kind === "staff" && res.token && res.admin) {
-        localStorage.setItem("nnfb_crm_token", res.token);
-        localStorage.setItem("nnfb_crm_who", res.admin.name + " · " + res.admin.email);
-        window.location.replace("crm/");
-        return { staff: true };
+        return enterStaff(res.admin, res.token);
       }
       setSession(toSession(res.user), res.token);
       return res.user;
     }).catch(function (err) {
-      var e = creds.email;
-      var p = creds.password;
-      if (e === "admin@admin.com" && p === "admin305@@@") {
-        localStorage.setItem("nnfb_crm_token", DEMO_TOKEN);
-        localStorage.setItem("nnfb_crm_who", "Thomas · " + e);
-        window.location.replace("crm/");
-        return { staff: true };
-      }
-      if (e === "test@test.com" && p === "test123") {
+      if (creds.email === "test@test.com" && creds.password === "test123") {
         setSession(toSession(demoUser()), DEMO_TOKEN);
         return getSession();
       }

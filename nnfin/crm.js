@@ -17,6 +17,29 @@
   function setToken(t) { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }
   function isDemo() { return token() === DEMO_TOKEN; }
 
+  function probeLive() {
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 800);
+    return fetch("/api/health", { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+      .then(function (res) {
+        clearTimeout(timer);
+        if (!res.ok) return false;
+        return res.json().then(function (data) { return !!(data && data.ok); }).catch(function () { return false; });
+      })
+      .catch(function () {
+        clearTimeout(timer);
+        return false;
+      });
+  }
+
+  function enterStaff(who, liveToken) {
+    setToken(liveToken || DEMO_TOKEN);
+    localStorage.setItem("nnfb_crm_who", who.name + " · " + who.email);
+    document.getElementById("admEmail").value = "";
+    document.getElementById("admPass").value = "";
+    enter();
+  }
+
   function staffMatch(email, password) {
     var e = (email || "").trim().toLowerCase();
     var p = (password || "").trim();
@@ -272,7 +295,7 @@
       });
     }).catch(function (err) {
       if (err && err.message && err.message !== "Failed to fetch") throw err;
-      throw new Error("Server is not reachable. Start it with python3 server.py.");
+      throw new Error("Live server is offline. Sign in again for the local CRM.");
     });
   }
 
@@ -401,29 +424,33 @@
     var email = document.getElementById("admEmail").value.trim();
     var password = document.getElementById("admPass").value;
     var localStaff = staffMatch(email, password);
-    api("/api/admin/login", {
-      method: "POST",
-      body: { email: email, password: password }
-    }).then(function (res) {
-      setToken(res.token);
-      localStorage.setItem("nnfb_crm_who", res.admin.name + " · " + res.admin.email);
-      document.getElementById("admEmail").value = "";
-      document.getElementById("admPass").value = "";
-      enter();
-    }).catch(function (err2) {
-      if (localStaff) {
-        setToken(DEMO_TOKEN);
-        localStorage.setItem("nnfb_crm_who", localStaff.name + " · " + localStaff.email);
-        document.getElementById("admEmail").value = "";
-        document.getElementById("admPass").value = "";
-        enter();
+    if (!localStaff) {
+      err.hidden = false;
+      err.textContent = "Email or password is incorrect.";
+      btn.disabled = false;
+      btn.textContent = "Enter CRM";
+      return false;
+    }
+    probeLive().then(function (up) {
+      if (!up) {
+        enterStaff(localStaff);
         return;
       }
-      err.hidden = false;
-      err.textContent = err2.message || "Could not sign in.";
+      return fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, password: password })
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (res.ok && data.token && data.admin) enterStaff(data.admin, data.token);
+          else enterStaff(localStaff);
+        });
+      }).catch(function () {
+        enterStaff(localStaff);
+      });
     }).then(function () {
       btn.disabled = false;
-      btn.textContent = "Enter lattice";
+      btn.textContent = "Enter CRM";
     });
     return false;
   });
@@ -473,9 +500,9 @@
     document.querySelectorAll(".nav").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-view") === (name === "client" ? "clients" : name));
     });
-    var titles = { home: "Lattice", clients: "Nodes", live: "Presence", feed: "Stream", intel: "Intel", client: "Dossier" };
+    var titles = { home: "CRM", clients: "Nodes", live: "Presence", feed: "Stream", intel: "Intel", client: "Dossier" };
     var kickers = { home: "Command surface", clients: "Client registry", live: "Active sessions", feed: "Event stream", intel: "Pattern deck", client: "Identity file" };
-    titleEl.textContent = titles[name] || "Lattice";
+    titleEl.textContent = titles[name] || "CRM";
     document.getElementById("kicker").textContent = kickers[name] || "Command surface";
     if (name === "home") loadHome();
     else if (name === "clients") loadClients(extra || document.getElementById("globalQ").value);
@@ -528,9 +555,9 @@
         kpi("Sign-ups", d.signupsToday, "today") +
         kpi("Clicks", d.clicksToday, "today") +
         kpi("Failed", d.failedToday, "auth rejects") + "</div>" +
-        '<div class="card vault-banner"><div><h2>Identity vault</h2><p>Names and emails are sealed at rest. Lattice decrypts first name and email after staff auth. Phone, address, tax ID, IP, and device stay off this surface.</p></div><span class="seal">hmac-sha256</span></div>' +
+        '<div class="card vault-banner"><div><h2>Identity vault</h2><p>Names and emails are sealed at rest. CRM decrypts first name and email after staff auth. Phone, address, tax ID, IP, and device stay off this surface.</p></div><span class="seal">hmac-sha256</span></div>' +
         '<div class="grid3"><div class="card"><div class="card-head"><h2>14-day telemetry</h2><span class="mono">' + esc(d.eventsToday) + " today</span></div>" +
-        bars(d.series) + '</div><div class="card"><h2>Conversion lattice</h2>' + funnelHtml(d.funnel) +
+        bars(d.series) + '</div><div class="card"><h2>Conversion funnel</h2>' + funnelHtml(d.funnel) +
         '</div><div class="card"><h2>Signal mix</h2>' + mixHtml(d.mix) + "</div></div>" +
         '<div class="grid2"><div class="card"><div class="card-head"><h2>Activity heatmap</h2><span class="mono">UTC · 14d</span></div>' +
         heatHtml(d.heatmap) + '</div><div class="card"><h2>Live stream</h2><div class="feed">' +
@@ -579,7 +606,7 @@
         '<div class="kpis">' + kpi("Live nodes", nodes.length, "heartbeat < 90s") +
         kpi("Open sessions", nodes.reduce(function (n, u) { return n + (u.openSession ? 1 : 0); }, 0), "unterminated") +
         kpi("Avg score", nodes.length ? Math.round(nodes.reduce(function (n, u) { return n + (u.score || 0); }, 0) / nodes.length) : 0, "engagement") + "</div>" +
-        '<div class="grid2"><div class="card"><h2>Presence field</h2>' + (nodes.length ? radar : '<p class="muted">Nobody is in the lattice right now.</p>') +
+        '<div class="grid2"><div class="card"><h2>Presence field</h2>' + (nodes.length ? radar : '<p class="muted">Nobody is in the CRM right now.</p>') +
         '</div><div class="card"><h2>Active dossiers</h2>' +
         (nodes.length ? nodes.map(function (u) {
           return '<div class="feed-item row" data-id="' + esc(u.id) + '" style="cursor:pointer"><span class="muted">' + fmt(u.last_seen_at) +
@@ -690,7 +717,7 @@
           "</b>" + esc(e.label || "") + (e.path ? '<div class="muted">' + esc(e.path) + (e.href ? " → " + esc(e.href) : "") + "</div>" : "") + "</div></div>";
       }).join("") + "</div>";
     } else if (detailTab === "signals") {
-      pane.innerHTML = "<h2>Personal lattice</h2>" + heatHtml(d.heatmap) + '<div style="margin:16px 0">' + bars(d.series) + "</div>" +
+      pane.innerHTML = "<h2>Personal activity</h2>" + heatHtml(d.heatmap) + '<div style="margin:16px 0">' + bars(d.series) + "</div>" +
         mixHtml(d.mix);
     } else if (detailTab === "clicks") {
       pane.innerHTML = "<h2>Top clicks</h2>" + topClicks(d.topClicks);
@@ -731,11 +758,18 @@
   if (isDemo()) {
     enter();
   } else if (token()) {
-    api("/api/admin/overview").then(function () {
-      enter();
-    }).catch(function () {
-      setToken(null);
-      showGate();
+    probeLive().then(function (up) {
+      if (!up) {
+        setToken(null);
+        showGate();
+        return;
+      }
+      return api("/api/admin/overview").then(function () {
+        enter();
+      }).catch(function () {
+        setToken(null);
+        showGate();
+      });
     });
   } else {
     showGate();

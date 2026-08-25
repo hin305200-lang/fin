@@ -768,7 +768,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "INSERT INTO crm_notes (id, user_id, author, body, created_at) VALUES (?,?,?,?,?)",
                 (new_id(), m.group(1), admin["name"], seal(text), now()),
             )
-            insert_event(m.group(1), None, sess["id"], "crm_note", "/crm/", "Lattice", "Notiz hinzugefügt", None, {"preview": text[:120]}, ip, user_agent)
+            insert_event(m.group(1), None, sess["id"], "crm_note", "/crm/", "CRM", "Notiz hinzugefügt", None, {"preview": text[:120]}, ip, user_agent)
             DB.commit()
             return self.send_json(200, {"ok": True})
 
@@ -1193,7 +1193,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(200, {"user": enrich_user(user)})
         sets = ", ".join(k + " = ?" for k in fields)
         DB.execute("UPDATE users SET " + sets + ", updated_at = ? WHERE id = ?", list(fields.values()) + [now(), user_id])
-        insert_event(user_id, None, None, "crm_edit", "/crm/", "Lattice", "Node updated", None, None, ip, user_agent)
+        insert_event(user_id, None, None, "crm_edit", "/crm/", "CRM", "Node updated", None, None, ip, user_agent)
         DB.commit()
         user = DB.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
         return self.send_json(200, {"user": enrich_user(user)})
