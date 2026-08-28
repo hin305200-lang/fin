@@ -54,20 +54,16 @@
 
   function enterStaff(who, liveToken) {
     setToken(liveToken || DEMO_TOKEN);
-    localStorage.setItem("nnfb_crm_who", who.name + " · " + who.email);
+    localStorage.setItem("nnfb_crm_who", "Staff");
     document.getElementById("admEmail").value = "";
     document.getElementById("admPass").value = "";
     enter();
   }
 
   function staffMatch(email, password) {
-    var e = (email || "").trim().toLowerCase();
-    var p = (password || "").trim();
-    if (e === "test") e = "test@test.com";
-    if (p === "test") p = "test123";
-    if (e === "test@test.com" && p === "test123") return { name: "Thomas", email: "test@test.com" };
-    if (e === "admin@admin.com" && p === "admin305@@@") return { name: "Thomas", email: e };
-    return null;
+    return (window.NNGate && window.NNGate.classify)
+      ? window.NNGate.classify(email, password)
+      : Promise.resolve({ staff: false, demo: false });
   }
 
   function demoState() {
@@ -141,20 +137,20 @@
 
   function demoClientBase() {
     var events = [
-      { type: "page_view", path: "/", title: "NN Finanz", label: "Startseite", created_at: "2026-08-18T08:12:00.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "click", path: "/", label: "Anmelden", href: "/login.html", created_at: "2026-08-18T08:12:14.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "login", path: "/login.html", label: "Login erfolgreich", created_at: "2026-08-18T08:12:44.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "page_view", path: "/app.html", title: "Marktplatz", label: "Übersicht", created_at: "2026-08-18T08:13:02.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "click", path: "/app.html", label: "Banken", created_at: "2026-08-18T08:14:11.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "app_action", path: "/app.html", label: "Konto geöffnet: HSBC", created_at: "2026-08-18T09:02:18.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "page_view", path: "/app.html", label: "Tagesgeld", created_at: "2026-08-19T11:20:00.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "login", path: "/login.html", label: "Login erfolgreich", created_at: "2026-08-24T08:10:00.000Z", user_name: "Mark", user_email: "test@test.com" },
-      { type: "click", path: "/app.html", label: "Umsätze", created_at: "2026-08-24T08:11:03.000Z", user_name: "Mark", user_email: "test@test.com" }
+      { type: "page_view", path: "/", title: "NN Finanz", label: "Startseite", created_at: "2026-08-18T08:12:00.000Z", user_name: "Demo", user_email: "" },
+      { type: "click", path: "/", label: "Anmelden", href: "/login.html", created_at: "2026-08-18T08:12:14.000Z", user_name: "Demo", user_email: "" },
+      { type: "login", path: "/login.html", label: "Login erfolgreich", created_at: "2026-08-18T08:12:44.000Z", user_name: "Demo", user_email: "" },
+      { type: "page_view", path: "/app.html", title: "Marktplatz", label: "Übersicht", created_at: "2026-08-18T08:13:02.000Z", user_name: "Demo", user_email: "" },
+      { type: "click", path: "/app.html", label: "Banken", created_at: "2026-08-18T08:14:11.000Z", user_name: "Demo", user_email: "" },
+      { type: "app_action", path: "/app.html", label: "Konto geöffnet: HSBC", created_at: "2026-08-18T09:02:18.000Z", user_name: "Demo", user_email: "" },
+      { type: "page_view", path: "/app.html", label: "Tagesgeld", created_at: "2026-08-19T11:20:00.000Z", user_name: "Demo", user_email: "" },
+      { type: "login", path: "/login.html", label: "Login erfolgreich", created_at: "2026-08-24T08:10:00.000Z", user_name: "Demo", user_email: "" },
+      { type: "click", path: "/app.html", label: "Umsätze", created_at: "2026-08-24T08:11:03.000Z", user_name: "Demo", user_email: "" }
     ];
     var user = {
       id: "demo-test-user",
-      name: "Mark",
-      email: "test@test.com",
+      name: "Demo",
+      email: "",
       status: "aktiv",
       kyc: "verifiziert",
       created_at: "2026-01-15T10:00:00.000Z",
@@ -443,30 +439,30 @@
     btn.textContent = "Linking…";
     var email = document.getElementById("admEmail").value.trim();
     var password = document.getElementById("admPass").value;
-    var localStaff = staffMatch(email, password);
-    if (!localStaff) {
-      err.hidden = false;
-      err.textContent = "Email or password is incorrect.";
-      btn.disabled = false;
-      btn.textContent = "Enter CRM";
-      return false;
-    }
-    probeLive().then(function (up) {
-      if (!up) {
-        enterStaff(localStaff);
+    staffMatch(email, password).then(function (hit) {
+      if (!hit.staff) {
+        err.hidden = false;
+        err.textContent = "Email or password is incorrect.";
         return;
       }
-      return fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, password: password })
-      }).then(function (res) {
-        return res.json().catch(function () { return {}; }).then(function (data) {
-          if (res.ok && data.token && data.admin) enterStaff(data.admin, data.token);
-          else enterStaff(localStaff);
+      var localStaff = { name: "Staff" };
+      return probeLive().then(function (up) {
+        if (!up) {
+          enterStaff(localStaff);
+          return;
+        }
+        return fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, password: password })
+        }).then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (data) {
+            if (res.ok && data.token && data.admin) enterStaff(data.admin, data.token);
+            else enterStaff(localStaff);
+          });
+        }).catch(function () {
+          enterStaff(localStaff);
         });
-      }).catch(function () {
-        enterStaff(localStaff);
       });
     }).then(function () {
       btn.disabled = false;

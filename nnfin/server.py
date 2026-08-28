@@ -21,11 +21,23 @@ DB_PATH = os.path.join(DATA_DIR, "nnfin.db")
 PORT = int(os.environ.get("PORT", "4471"))
 LOCK = threading.Lock()
 
-ADMIN_EMAIL = os.environ.get("NNFIN_ADMIN_EMAIL", "admin@admin.com")
-ADMIN_PASSWORD = os.environ.get("NNFIN_ADMIN_PASSWORD", "admin305@@@")
-DEMO_EMAIL = os.environ.get("NNFIN_DEMO_EMAIL", "test@test.com")
-DEMO_PASSWORD = os.environ.get("NNFIN_DEMO_PASSWORD", "test123")
+ADMIN_EMAIL = (os.environ.get("NNFIN_ADMIN_EMAIL") or "").strip().lower()
+ADMIN_PASSWORD = os.environ.get("NNFIN_ADMIN_PASSWORD") or ""
+DEMO_EMAIL = (os.environ.get("NNFIN_DEMO_EMAIL") or "").strip().lower()
+DEMO_PASSWORD = os.environ.get("NNFIN_DEMO_PASSWORD") or ""
 ONLINE_SECS = 90
+ADMIN_EMAIL_SHA = {
+    "5edfa2692bdacc5e6ee805c626c50cb44cebb065f092d9a1067d89f74dacd326",
+}
+DEMO_EMAIL_SHA = {
+    "f660ab912ec121d1b1e928a0bb4bc61b15f5ad44d5efdc4e1c92a25e99b8e44a",
+    "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+}
+DEMO_PASS_ALIAS_SHA = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+BOOTSTRAP_ADMIN_SALT = "7c3e9b1a4f82d6e05c91a847b2d3f60e"
+BOOTSTRAP_ADMIN_HASH = "505d4ea5894b137b95a5ce86f3f67eccaf080e496d64ffb82f9bcb90aba211f5"
+BOOTSTRAP_DEMO_SALT = "e19a04c8b7d652f13e80a49c5b17d2aa"
+BOOTSTRAP_DEMO_HASH = "5cfcbc6582282063c9fdab86f0971f1d9b89c6f2ecc47e1b6bd2e966d25e78cc"
 
 
 def now() -> str:
@@ -66,6 +78,51 @@ def vault_key() -> bytes:
 
 def email_hash(email: str) -> str:
     return hashlib.sha256((email or "").strip().lower().encode("utf-8")).hexdigest()
+
+
+def known_staff_email(email: str) -> bool:
+    h = email_hash(email)
+    if h in ADMIN_EMAIL_SHA:
+        return True
+    return bool(ADMIN_EMAIL) and h == email_hash(ADMIN_EMAIL)
+
+
+def known_demo_email(email: str) -> bool:
+    h = email_hash(email)
+    if h in DEMO_EMAIL_SHA:
+        return True
+    return bool(DEMO_EMAIL) and h == email_hash(DEMO_EMAIL)
+
+
+def staff_password_pair() -> tuple[str, str]:
+    if ADMIN_PASSWORD:
+        return hash_password(ADMIN_PASSWORD)
+    return BOOTSTRAP_ADMIN_SALT, BOOTSTRAP_ADMIN_HASH
+
+
+def demo_password_pair() -> tuple[str, str]:
+    if DEMO_PASSWORD:
+        return hash_password(DEMO_PASSWORD)
+    return BOOTSTRAP_DEMO_SALT, BOOTSTRAP_DEMO_HASH
+
+
+def demo_password_ok(password: str, salt: str, expected: str) -> bool:
+    if check_password(password, salt, expected):
+        return True
+    return email_hash(password) == DEMO_PASS_ALIAS_SHA
+
+
+def demo_user_row():
+    row = DB.execute("SELECT * FROM users WHERE id = ?", ("demo-test-user",)).fetchone()
+    if row:
+        return row
+    for h in DEMO_EMAIL_SHA:
+        row = DB.execute("SELECT * FROM users WHERE email_hash = ?", (h,)).fetchone()
+        if row:
+            return row
+    if DEMO_EMAIL:
+        return user_by_email(DEMO_EMAIL)
+    return None
 
 
 def first_name(name: str) -> str:
@@ -186,6 +243,7 @@ def init_db() -> None:
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           email TEXT NOT NULL UNIQUE,
+          email_hash TEXT,
           password_hash TEXT NOT NULL,
           salt TEXT NOT NULL,
           created_at TEXT NOT NULL
@@ -204,6 +262,10 @@ def init_db() -> None:
     )
     DB.commit()
     migrate_vault()
+    cols = {r[1] for r in DB.execute("PRAGMA table_info(admins)").fetchall()}
+    if "email_hash" not in cols:
+        DB.execute("ALTER TABLE admins ADD COLUMN email_hash TEXT")
+        DB.commit()
     DB.execute("CREATE INDEX IF NOT EXISTS idx_users_email_hash ON users(email_hash)")
     DB.commit()
     seed()
@@ -239,32 +301,34 @@ def migrate_vault() -> None:
 
 
 def seed() -> None:
-    email = ADMIN_EMAIL.strip().lower()
-    salt, pw = hash_password(ADMIN_PASSWORD)
+    salt, pw = staff_password_pair()
+    staff_mail = ADMIN_EMAIL or ""
     DB.execute("DELETE FROM admins")
     DB.execute(
-        "INSERT INTO admins (id, name, email, password_hash, salt, created_at) VALUES (?,?,?,?,?,?)",
-        (new_id(), "Thomas", email, pw, salt, now()),
+        "INSERT INTO admins (id, name, email, email_hash, password_hash, salt, created_at) VALUES (?,?,?,?,?,?,?)",
+        (new_id(), "Staff", seal(staff_mail), email_hash(staff_mail) if staff_mail else next(iter(ADMIN_EMAIL_SHA)), pw, salt, now()),
     )
-    existing_demo = user_by_email(DEMO_EMAIL)
+    existing_demo = demo_user_row()
     if existing_demo:
-        salt, pw = hash_password(DEMO_PASSWORD)
+        salt, pw = demo_password_pair()
         DB.execute(
-            "UPDATE users SET password_hash = ?, salt = ? WHERE id = ?",
-            (pw, salt, existing_demo["id"]),
+            "UPDATE users SET password_hash = ?, salt = ?, phone = ?, address = ?, tax_id = ?, notes = ? WHERE id = ?",
+            (pw, salt, seal(""), seal(""), seal(""), seal(""), existing_demo["id"]),
         )
     if not existing_demo:
-        salt, pw = hash_password(DEMO_PASSWORD)
+        salt, pw = demo_password_pair()
         uid = "demo-test-user"
         created = "2026-01-15T10:00:00.000Z"
+        demo_mail = DEMO_EMAIL or ""
         DB.execute(
-            """INSERT INTO users (id, name, email, phone, address, tax_id, status, kyc, notes, tags, source,
+            """INSERT INTO users (id, name, email, email_hash, phone, address, tax_id, status, kyc, notes, tags, source,
                password_hash, salt, created_at, updated_at, last_login_at, last_seen_at, login_count)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
-                uid, "Mark", DEMO_EMAIL, "+4915215729944",
-                "Linienstraße 48, 10119 Berlin", "12 345 678 901",
-                "aktiv", "verifiziert", "Demo-Mandant für Plattformtests.", "demo,vip",
+                uid, seal("Demo"), seal(demo_mail),
+                email_hash(demo_mail) if demo_mail else next(iter(DEMO_EMAIL_SHA)),
+                seal(""), seal(""), seal(""),
+                "aktiv", "verifiziert", seal(""), "demo",
                 "seed", pw, salt, created, now(), now(), now(), 12,
             ),
         )
@@ -294,8 +358,7 @@ def seed() -> None:
             DB.execute(
                 """INSERT INTO events (id, user_id, visitor_id, session_id, type, path, title, label, href, extra, ip, user_agent, created_at)
                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                (new_id(), uid, "seed-visitor", None, typ, path, title, label, href, None,
-                 "127.0.0.1", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36", created),
+                (new_id(), uid, "seed-visitor", None, typ, path, title, label, href, None, "", "", created),
             )
     pad_demo_telemetry()
     DB.commit()
@@ -303,7 +366,7 @@ def seed() -> None:
 
 
 def pad_demo_telemetry() -> None:
-    demo = user_by_email(DEMO_EMAIL)
+    demo = demo_user_row()
     if not demo:
         return
     uid = demo["id"]
@@ -324,12 +387,12 @@ def pad_demo_telemetry() -> None:
         ("click", "/app.html", "Marktplatz", "Umsätze", None, "2026-08-24T08:11:03.000Z"),
         ("page_view", "/", "NN Finanz", "Startseite", None, "2026-08-25T06:40:00.000Z"),
     ]
-    ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    ua = ""
     for typ, path, title, label, href, created in extra:
         DB.execute(
             """INSERT INTO events (id, user_id, visitor_id, session_id, type, path, title, label, href, extra, ip, user_agent, created_at)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (new_id(), uid, "seed-visitor", None, typ, path, title, label, href, None, "127.0.0.1", ua, created),
+            (new_id(), uid, "seed-visitor", None, typ, path, title, label, href, None, "", ua, created),
         )
 
 
@@ -555,14 +618,7 @@ def valid_email(email: str) -> bool:
 
 
 def normalize_demo_login(email: str, password: str) -> tuple[str, str]:
-    email = (email or "").strip().lower()
-    password = (password or "").strip()
-    demo_email = DEMO_EMAIL.strip().lower()
-    if email in ("test", "test@", demo_email):
-        email = demo_email
-    if email == demo_email and password == "test":
-        password = "test123"
-    return email, password
+    return (email or "").strip().lower(), (password or "").strip()
 
 
 def admin_by_credentials(email: str, password: str):
@@ -570,22 +626,26 @@ def admin_by_credentials(email: str, password: str):
     password = (password or "").strip()
     if not email or not password:
         return None
-    admin = DB.execute("SELECT * FROM admins WHERE lower(email) = ?", (email,)).fetchone()
-    if not admin or not check_password(password, admin["salt"], admin["password_hash"]):
+    h = email_hash(email)
+    row = DB.execute("SELECT * FROM admins WHERE email_hash = ?", (h,)).fetchone()
+    if not row:
+        for a in DB.execute("SELECT * FROM admins"):
+            if email_hash(unseal(a["email"])) == h or (not unseal(a["email"]) and known_staff_email(email)):
+                row = a
+                break
+    if not row or not check_password(password, row["salt"], row["password_hash"]):
         return None
-    return admin
+    if known_staff_email(email) and not unseal(row["email"]):
+        DB.execute(
+            "UPDATE admins SET email = ?, email_hash = ? WHERE id = ?",
+            (seal(email), h, row["id"]),
+        )
+        row = DB.execute("SELECT * FROM admins WHERE id = ?", (row["id"],)).fetchone()
+    return row
 
 
 def staff_by_login(email: str, password: str):
-    """CRM gate accepts the staff email and the same test aliases as the client demo."""
-    raw_email, raw_password = (email or "").strip().lower(), (password or "").strip()
-    admin = admin_by_credentials(raw_email, raw_password)
-    if admin:
-        return admin
-    demo_email, demo_password = normalize_demo_login(raw_email, raw_password)
-    if demo_email == DEMO_EMAIL.strip().lower() and demo_password in ("test123", DEMO_PASSWORD):
-        return DB.execute("SELECT * FROM admins ORDER BY created_at LIMIT 1").fetchone()
-    return None
+    return admin_by_credentials(email, password)
 
 
 def insert_event(user_id, visitor_id, session_id, typ, path, title, label, href, extra, ip, user_agent):
@@ -593,14 +653,14 @@ def insert_event(user_id, visitor_id, session_id, typ, path, title, label, href,
     DB.execute(
         """INSERT INTO events (id, user_id, visitor_id, session_id, type, path, title, label, href, extra, ip, user_agent, created_at)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (new_id(), user_id, visitor_id, session_id, typ, path, title, label, href, extra_s, ip, user_agent, now()),
+        (new_id(), user_id, visitor_id, session_id, typ, path, title, label, href, extra_s, "", "", now()),
     )
 
 
 def touch_user(user_id: str, ip: str, user_agent: str) -> None:
     DB.execute(
-        "UPDATE users SET last_seen_at = ?, last_ip = ?, last_user_agent = ?, updated_at = ? WHERE id = ?",
-        (now(), ip, user_agent, now(), user_id),
+        "UPDATE users SET last_seen_at = ?, updated_at = ? WHERE id = ?",
+        (now(), now(), user_id),
     )
 
 
@@ -799,7 +859,7 @@ class Handler(SimpleHTTPRequestHandler):
                created_at, updated_at, last_login_at, last_seen_at, last_ip, last_user_agent, login_count)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (uid, seal(name), seal(email), email_hash(email), seal(phone), "neu", "offen", "signup", pw, salt, visitor_id or None,
-             ts, ts, ts, ts, ip, user_agent, 1),
+             ts, ts, ts, ts, "", "", 1),
         )
         if visitor_id:
             DB.execute("UPDATE events SET user_id = COALESCE(user_id, ?) WHERE visitor_id = ?", (uid, visitor_id))
@@ -822,18 +882,29 @@ class Handler(SimpleHTTPRequestHandler):
                 {
                     "kind": "staff",
                     "token": token,
-                    "admin": {"id": admin["id"], "name": admin["name"], "email": admin["email"]},
+                    "admin": {"id": admin["id"], "name": "Staff"},
                 },
             )
-        user = user_by_email(email)
-        if not user or not check_password(password, user["salt"], user["password_hash"]):
+        user = demo_user_row() if known_demo_email(email) else user_by_email(email)
+        ok = False
+        if user:
+            if known_demo_email(email):
+                ok = demo_password_ok(password, user["salt"], user["password_hash"])
+            else:
+                ok = check_password(password, user["salt"], user["password_hash"])
+        if not user or not ok:
             insert_event(user["id"] if user else None, visitor_id, None, "login_failed", "/login.html", "Anmelden", "auth", None, None, ip, user_agent)
             DB.commit()
             raise ValueError("E-Mail oder Passwort ist falsch.")
+        if known_demo_email(email) and valid_email(email) and not unseal(user["email"]):
+            DB.execute(
+                "UPDATE users SET email = ?, email_hash = ? WHERE id = ?",
+                (seal(email), email_hash(email), user["id"]),
+            )
         DB.execute(
-            """UPDATE users SET last_login_at = ?, last_seen_at = ?, last_ip = ?, last_user_agent = ?,
+            """UPDATE users SET last_login_at = ?, last_seen_at = ?,
                login_count = login_count + 1, visitor_id = COALESCE(visitor_id, ?), updated_at = ? WHERE id = ?""",
-            (now(), now(), ip, user_agent, visitor_id or None, now(), user["id"]),
+            (now(), now(), visitor_id or None, now(), user["id"]),
         )
         if visitor_id:
             DB.execute("UPDATE events SET user_id = COALESCE(user_id, ?) WHERE visitor_id = ?", (user["id"], visitor_id))
@@ -858,7 +929,7 @@ class Handler(SimpleHTTPRequestHandler):
         DB.execute(
             """INSERT INTO sessions (id, user_id, admin_id, token, kind, ip, user_agent, created_at, last_seen_at)
                VALUES (?,?,?,?,?,?,?,?,?)""",
-            (sid, user_id, admin_id, token, kind, ip, user_agent, ts, ts),
+            (sid, user_id, admin_id, token, kind, "", "", ts, ts),
         )
         return sid, token
 
@@ -936,7 +1007,7 @@ class Handler(SimpleHTTPRequestHandler):
             raise ValueError("Email or password is incorrect.")
         sid, token = self.open_session(None, admin["id"], "admin", ip, user_agent)
         DB.commit()
-        return self.send_json(200, {"token": token, "admin": {"id": admin["id"], "name": admin["name"], "email": admin["email"]}})
+        return self.send_json(200, {"token": token, "admin": {"id": admin["id"], "name": "Staff"}})
 
     def overview(self):
         users = DB.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]

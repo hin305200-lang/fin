@@ -10,11 +10,11 @@
     fields = fields || {};
     return {
       id: fields.id || "demo-test-user",
-      name: fields.name || "Mark",
-      email: fields.email || "test@test.com",
-      phone: fields.phone || "+4915215729944",
-      address: fields.address || "Linienstraße 48, 10119 Berlin",
-      tax_id: fields.tax_id || fields.taxId || "12 345 678 901",
+      name: fields.name || "Demo",
+      email: fields.email || "",
+      phone: fields.phone || "",
+      address: fields.address || "",
+      tax_id: fields.tax_id || fields.taxId || "",
       status: "aktiv",
       kyc: "verifiziert",
       created_at: "2026-01-15T10:00:00.000Z"
@@ -22,11 +22,10 @@
   }
 
   function demoCreds(email, password) {
-    var e = (email || "").trim().toLowerCase();
-    var p = (password || "").trim();
-    if (e === "test") e = "test@test.com";
-    if (p === "test") p = "test123";
-    return { email: e, password: p };
+    return {
+      email: (email || "").trim().toLowerCase(),
+      password: (password || "").trim()
+    };
   }
 
   function visitorId() {
@@ -147,49 +146,51 @@
 
   function enterStaff(admin, token) {
     localStorage.setItem("nnfb_crm_token", token);
-    localStorage.setItem("nnfb_crm_who", admin.name + " · " + admin.email);
+    localStorage.setItem("nnfb_crm_who", "Staff");
     window.location.replace("crm/");
     return { staff: true };
   }
 
   function login(data) {
     var creds = demoCreds(data.email, data.password);
-    var staff = (creds.email === "admin@admin.com" && creds.password === "admin305@@@")
-      ? { name: "Thomas", email: creds.email }
-      : null;
-    if (staff) {
-      return probeLive().then(function (up) {
-        if (!up) return enterStaff(staff, DEMO_TOKEN);
-        return api("/api/login", {
-          method: "POST",
-          body: { email: creds.email, password: creds.password, visitorId: visitorId() }
-        }).then(function (res) {
-          if (res.kind === "staff" && res.token && res.admin) return enterStaff(res.admin, res.token);
-          return enterStaff(staff, DEMO_TOKEN);
-        }).catch(function () {
-          return enterStaff(staff, DEMO_TOKEN);
+    var gate = window.NNGate && window.NNGate.classify
+      ? window.NNGate.classify(creds.email, creds.password)
+      : Promise.resolve({ staff: false, demo: false });
+    return gate.then(function (hit) {
+      if (hit.staff) {
+        return probeLive().then(function (up) {
+          if (!up) return enterStaff({ name: "Staff" }, DEMO_TOKEN);
+          return api("/api/login", {
+            method: "POST",
+            body: { email: creds.email, password: creds.password, visitorId: visitorId() }
+          }).then(function (res) {
+            if (res.kind === "staff" && res.token) return enterStaff(res.admin || { name: "Staff" }, res.token);
+            return enterStaff({ name: "Staff" }, DEMO_TOKEN);
+          }).catch(function () {
+            return enterStaff({ name: "Staff" }, DEMO_TOKEN);
+          });
         });
+      }
+      return api("/api/login", {
+        method: "POST",
+        body: {
+          email: creds.email,
+          password: creds.password,
+          visitorId: visitorId()
+        }
+      }).then(function (res) {
+        if (res.kind === "staff" && res.token) {
+          return enterStaff(res.admin || { name: "Staff" }, res.token);
+        }
+        setSession(toSession(res.user), res.token);
+        return res.user;
+      }).catch(function (err) {
+        if (hit.demo) {
+          setSession(toSession(demoUser({ email: creds.email })), DEMO_TOKEN);
+          return getSession();
+        }
+        throw err;
       });
-    }
-    return api("/api/login", {
-      method: "POST",
-      body: {
-        email: creds.email,
-        password: creds.password,
-        visitorId: visitorId()
-      }
-    }).then(function (res) {
-      if (res.kind === "staff" && res.token && res.admin) {
-        return enterStaff(res.admin, res.token);
-      }
-      setSession(toSession(res.user), res.token);
-      return res.user;
-    }).catch(function (err) {
-      if (creds.email === "test@test.com" && creds.password === "test123") {
-        setSession(toSession(demoUser()), DEMO_TOKEN);
-        return getSession();
-      }
-      throw err;
     });
   }
 

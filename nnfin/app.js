@@ -66,13 +66,13 @@
   function uid(prefix) { return (prefix || "id") + "-" + Date.now() + "-" + Math.floor(Math.random() * 9999); }
 
   function isDemoUser() {
-    return session.id === "demo-test-user" || session.email === "test@test.com";
+    return session.id === "demo-test-user";
   }
 
   function defaultProfile() {
     return {
-      address: "Linienstraße 48, 10119 Berlin",
-      taxId: "12 345 678 901",
+      address: "",
+      taxId: "",
       kyc: "verified",
       twoFa: true,
       notifyEmail: true,
@@ -421,7 +421,7 @@
         modal.innerHTML = "<h3>" + B.logo(bank.id, 36) + " Anmeldung bei " + bank.name + "</h3>" +
           "<p>Demo-Zugang. Beliebige PIN reicht — es wird kein echtes Bank-Login ausgeführt.</p>" +
           '<div class="field"><label>Online-Banking Nutzer</label><input id="bkUser" value="' + session.email + '"></div>' +
-          '<div class="field"><label>PIN / Passwort</label><div class="pw-wrap"><input id="bkPin" type="password" value="1234"><button type="button" class="pw-toggle" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.7 10.7A3 3 0 0 0 13.3 13.3"/><path d="M9.9 5.1A11 11 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.8 7.9 2 12 2 12s3.6 7 10 7a10.8 10.8 0 0 0 4.4-.9"/></svg></button></div></div>' +
+          '<div class="field"><label>PIN / Passwort</label><div class="pw-wrap"><input id="bkPin" type="password" value=""><button type="button" class="pw-toggle" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="pw-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="pw-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.7 10.7A3 3 0 0 0 13.3 13.3"/><path d="M9.9 5.1A11 11 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2"/><path d="M6.1 6.1C3.8 7.9 2 12 2 12s3.6 7 10 7a10.8 10.8 0 0 0 4.4-.9"/></svg></button></div></div>' +
           '<div class="actions"><button class="btn btn-dark" id="bkNext">Konten laden</button><button class="btn btn-outline" id="bkBack">Zurück</button></div>';
         modal.querySelector("#bkBack").onclick = function () { step = 1; paint(modal); };
         if (window.NNAuth && window.NNAuth.bindPasswordToggles) window.NNAuth.bindPasswordToggles(modal);
