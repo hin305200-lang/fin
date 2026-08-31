@@ -6,13 +6,23 @@ This is a prototype. Products, partner banks, and Open-Banking links are simulat
 
 ## Run
 
-Python 3.10+ is enough. There are no pip packages.
+**React app** (homepage, login, signup):
 
 ```bash
 python3 server.py
 ```
 
-Then open [http://127.0.0.1:4471/](http://127.0.0.1:4471/).
+In another terminal:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/). Marketplace (`/app.html`) and CRM still come from Python / static HTML.
+
+If the API is down (including GitHub Pages), the known demo and staff logins still work in the browser, and signup still creates a local session. Live tracking and real accounts need `python3 server.py`.
 
 Do not use `python3 -m http.server` if you want live tracking — that still needs `server.py`.
 
@@ -24,9 +34,10 @@ SQLite is created at `data/nnfin.db` on first run. That file is gitignored.
 
 | Path | Role |
 | --- | --- |
-| `index.html` | Public site (German) |
-| `login.html` / `signup.html` | Client auth |
-| `app.html` | Logged-in marketplace |
+| `web/` | React + Vite app (home, login, signup) |
+| `index.html` | Public site (legacy HTML locally; React build on GitHub Pages) |
+| `login.html` / `signup.html` | Auth (legacy HTML locally; SPA on Pages) |
+| `app.html` | Logged-in marketplace (not yet migrated) |
 | `server.py` | HTTP + SQLite API |
 | `assets/` | Avatars and animation libraries |
 
