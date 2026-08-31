@@ -8,9 +8,18 @@
       name="description"
       content="NN Finanz verbindet Sparer mit Partnerbanken und Kreditgenossenschaften: hochverzinstes Tagesgeld, Festgeld und einfache ETF-Portfolios — über eine Plattform."
     />
+    <script>
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("rm");
+      } else {
+        document.documentElement.classList.add("motion");
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <script src="%BASE_URL%assets/lib/gsap.min.js"></script>
+    <script src="%BASE_URL%assets/lib/ScrollTrigger.min.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

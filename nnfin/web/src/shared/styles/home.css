@@ -302,10 +302,16 @@ footer{border-top:1px solid var(--line);padding:70px 0 0}
 .legal dd{color:var(--ink);font-weight:500}
 .legal a{color:var(--blue);font-weight:600}
 
-/* Content stays visible on GitHub Pages even if animation scripts fail to load. */
+/* Content stays visible if animation scripts fail. html.motion is set in index.html before first paint. */
 [data-reveal]{opacity:1;transform:none}
 html.motion [data-reveal]{opacity:0;transform:translateY(30px)}
-html.motion.rm [data-reveal],.rm [data-reveal]{opacity:1;transform:none}
+html.motion [data-hero]{opacity:0;transform:translateY(26px)}
+html.motion [data-hero-line]{transform:translateY(112%);filter:blur(10px)}
+html.motion [data-hero-dash]{opacity:0;transform:translateY(80px)}
+html.motion.rm [data-reveal],.rm [data-reveal],
+html.motion.rm [data-hero],.rm [data-hero],
+html.motion.rm [data-hero-line],.rm [data-hero-line],
+html.motion.rm [data-hero-dash],.rm [data-hero-dash]{opacity:1;transform:none;filter:none}
 h2.sec .w{display:inline-block}
 [data-hero-dash],.showcase .dash{will-change:transform}
 
