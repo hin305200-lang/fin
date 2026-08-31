@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PublicHome } from "../pages/PublicHome";
+import { routerBasename } from "../shared/lib/publicPath";
 
 const LoginPage = lazy(() => import("../pages/Login").then((m) => ({ default: m.LoginPage })));
 const SignupPage = lazy(() => import("../pages/Signup").then((m) => ({ default: m.SignupPage })));
@@ -11,10 +12,8 @@ const AccountRedirect = lazy(() => import("../pages/AccountRedirect").then((m) =
  * /app.html and /crm stay on the Python static site until those slices.
  */
 export function AppRouter() {
-  const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
-
   return (
-    <BrowserRouter basename={basename === "" ? undefined : basename}>
+    <BrowserRouter basename={routerBasename()}>
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<PublicHome />} />

@@ -7,8 +7,9 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const apiTarget = "http://127.0.0.1:4471";
 
 // GitHub Pages cannot set these headers. python3 server.py can (slice 6).
-export default defineConfig({
-  base: process.env.VITE_BASE || "/",
+// Production uses a relative base so www.nnfinanz.com (/) and github.io/fin/nnfin/ both load assets.
+export default defineConfig(({ command }) => ({
+  base: process.env.VITE_BASE || (command === "build" ? "./" : "/"),
   plugins: [react()],
   publicDir: "public",
   build: {
@@ -36,4 +37,4 @@ export default defineConfig({
       "/styles.css": apiTarget,
     },
   },
-});
+}));

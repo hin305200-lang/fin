@@ -1,0 +1,1 @@
+import{C as e,S as t,a as n,f as r,r as i}from"./index-pSc-pdws.js";var a=e(t(),1);function o(){let e=r();return(0,a.useEffect)(()=>{document.title=`Ihr Konto — NN-Finanzberatung`,i()?n():e(`/login`,{replace:!0})},[e]),null}export{o as AccountRedirect};
