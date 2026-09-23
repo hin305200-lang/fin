@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KaraFX — Trading Account Credit Request</title>
+    <link rel="icon" href="assets/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=13" />
+  </head>
+  <body>
+    <div class="stage">
+      <header class="chrome">
+        <div class="chrome-brand">
+          <img src="assets/logo.png" alt="KaraFX" />
+          <div>
+            <p class="chrome-kicker">KaraFX</p>
+            <p class="chrome-title">Trading Account Credit Request</p>
+          </div>
+        </div>
+        <div class="chrome-actions">
+          <span class="status-pill" id="statusPill">Awaiting execution</span>
+          <button type="button" class="btn ghost" id="printBtn">Print</button>
+          <button type="button" class="btn primary" id="downloadBtn" disabled>
+            Download PDF
+          </button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="toc" aria-label="Agreement contents">
+          <p class="toc-label">Contents</p>
+          <nav>
+            <a href="#parties">Parties</a>
+            <a href="#particulars">Particulars</a>
+            <a href="#s1">§ 1 Subject Matter</a>
+            <a href="#s2">§ 2 Minimum Balance</a>
+            <a href="#s3">§ 3 Minimum Credit</a>
+            <a href="#s4">§ 4 Addition of Credit</a>
+            <a href="#s5">§ 5 Trading Account</a>
+            <a href="#s6">§ 6 Term</a>
+            <a href="#s7">§ 7 Payout &amp; Profit</a>
+            <a href="#s8">§ 8 Manager</a>
+            <a href="#s9">§ 9 Client</a>
+            <a href="#s10">§ 10 Final Provisions</a>
+            <a href="#execution">Execution &amp; signatures</a>
+          </nav>
+          <p class="toc-note">Review the credit request, sign as the Client, then download the executed PDF.</p>
+        </aside>
+
+        <main>
+          <article class="paper" id="document">
+            <div class="doc-head">
+              <div class="doc-head-left">
+                <img class="doc-logo" src="assets/logo.png" alt="KaraFX" />
+              </div>
+              <div class="doc-head-right">
+                <p>Private &amp; Confidential</p>
+                <p>Request No. <span id="agreementNo">KFX-CR-0000</span></p>
+                <p>Date of issue <span id="issueDate">—</span></p>
+              </div>
+            </div>
+
+            <p class="instrument">Trading Account Credit Request</p>
+            <h1>Credit Request</h1>
+            <p class="doc-sub">KaraFX · Credit added to the trading account</p>
+            <div class="double-rule"></div>
+
+            <section id="parties">
+              <p class="open-line">
+                This Credit Request (hereinafter the “Agreement”) is made on
+                <input class="blank date-field" id="agreementDate" type="text" />
+              </p>
+              <p>It is entered into between:</p>
+
+              <div class="party-block">
+                <p class="party-label">(1) The Manager</p>
+                <table class="facts">
+                  <tbody>
+                    <tr>
+                      <th>Company</th>
+                      <td>
+                        <input class="blank wide" id="managerName" type="text" value="KaraFX" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Account Manager</th>
+                      <td>
+                        <input class="blank wide" id="accountManager" type="text" value="Thomas Anderson" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="party-close">— hereinafter referred to as the “Manager” —</p>
+              </div>
+
+              <p class="and">and</p>
+
+              <div class="party-block">
+                <p class="party-label">(2) The Client</p>
+                <table class="facts">
+                  <tbody>
+                    <tr>
+                      <th>Name</th>
+                      <td>
+                        <input class="blank wide" id="clientName" type="text" value="Pieter Willem" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Country</th>
+                      <td>
+                        <input class="blank wide" id="clientCountry" type="text" value="South Africa" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Gender</th>
+                      <td>
+                        <input class="blank wide" id="clientGender" type="text" value="Male" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Telephone</th>
+                      <td>
+                        <input class="blank wide" id="clientPhone" type="text" value="+27833575532" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>E-Mail</th>
+                      <td>
+                        <input class="blank wide" id="clientEmail" type="text" value="dsjvvtrust@nwisp.co.za" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="party-close">— hereinafter referred to as the “Client” —</p>
+              </div>
+
+              <p>
+                The Manager and the Client are hereinafter collectively referred to as
+                the “Parties”.
+              </p>
+            </section>
+
+            <section class="schedule" id="particulars">
+              <div class="schedule-head">
+                <span>Schedule 1</span>
+                <strong>Credit Particulars</strong>
+              </div>
+              <table>
+                <tbody>
+                  <tr>
+                    <th>A</th>
+                    <td>Credit to Add</td>
+                    <td>
+                      EUR
+                      <input
+                        class="blank amount"
+                        id="amount"
+                        type="text"
+                        value="1,000.00"
+                        inputmode="decimal"
+                      />
+                      <span class="words">(<span id="amountWords">one thousand euros</span>)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>B</th>
+                    <td>Minimum Credit</td>
+                    <td>EUR 1,000.00 (one thousand euros) to add to the trading account</td>
+                  </tr>
+                  <tr>
+                    <th>C</th>
+                    <td>Minimum Balance</td>
+                    <td>EUR 2,500.00 (two thousand five hundred euros) required to request credit</td>
+                  </tr>
+                  <tr>
+                    <th>D</th>
+                    <td>Trading Account Balance</td>
+                    <td>
+                      EUR
+                      <input
+                        class="blank amount"
+                        id="balance"
+                        type="text"
+                        value="2,500.00"
+                        inputmode="decimal"
+                      />
+                      <span class="words">(<span id="balanceWords">two thousand five hundred euros</span>)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>E</th>
+                    <td>Where Credit Is Added</td>
+                    <td>The Client’s trading account</td>
+                  </tr>
+                  <tr>
+                    <th>F</th>
+                    <td>Credit End Date</td>
+                    <td>25 October 2026</td>
+                  </tr>
+                  <tr>
+                    <th>G</th>
+                    <td>Payout before Profit</td>
+                    <td>The credit shall be paid out in full before any profit is withdrawn</td>
+                  </tr>
+                  <tr>
+                    <th>H</th>
+                    <td>Broker / Cooperation Partner</td>
+                    <td>
+                      <input
+                        class="blank wide"
+                        id="brokerName"
+                        type="text"
+                        value="KaraFX"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="clause" id="s1">
+              <h2><span>§ 1</span> Subject Matter of the Credit Request</h2>
+              <p>
+                <span class="num">(1)</span>
+                The subject matter of this Agreement is the Client’s request that the
+                Manager add credit to the Client’s trading account, and the Manager’s
+                acceptance of that request in accordance with this Agreement.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The Credit Amount stated in Schedule 1 shall be added to the Client’s
+                trading account. It is not paid out to the Client as a separate cash
+                transfer.
+              </p>
+            </section>
+
+            <section class="clause" id="s2">
+              <h2><span>§ 2</span> Minimum Balance to Request Credit</h2>
+              <p>
+                <span class="num">(1)</span>
+                A credit request may be made only where the balance of the Client’s
+                trading account is at least EUR 2,500.00 (in words: two thousand five
+                hundred euros).
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                Where the trading account balance is below EUR 2,500.00, this credit
+                request shall not be accepted and no credit shall be added.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The trading account balance stated in Schedule 1 is the balance on
+                which this request is made. The Client confirms that this balance is
+                not less than the minimum required under this § 2.
+              </p>
+            </section>
+
+            <section class="clause" id="s3">
+              <h2><span>§ 3</span> Minimum Credit to Add</h2>
+              <p>
+                <span class="num">(1)</span>
+                The minimum credit to be added to the trading account shall be
+                EUR 1,000.00 (in words: one thousand euros).
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                A credit request below this minimum amount shall not be accepted.
+              </p>
+            </section>
+
+            <section class="clause" id="s4">
+              <h2><span>§ 4</span> Addition of Credit</h2>
+              <p>
+                <span class="num">(1)</span>
+                Upon execution of this Agreement, and provided the conditions in § 2
+                and § 3 are met, the Manager shall add the Credit Amount to the
+                Client’s trading account.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The credit shall be deemed added only once the Credit Amount has been
+                credited to the trading account.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The credit is added within the framework of the operational cooperation
+                between the Manager and
+                <span class="live" data-for="brokerName">[Name of Broker / Cooperation Partner]</span>
+                (hereinafter the “Broker”).
+              </p>
+            </section>
+
+            <section class="clause" id="s5">
+              <h2><span>§ 5</span> Trading Account</h2>
+              <p>
+                <span class="num">(1)</span>
+                The credit shall be added solely to the trading account held for the
+                Client with the Broker.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The Client hereby authorizes the Broker, to the extent permitted by the
+                applicable arrangements, to record the Credit Amount on the trading
+                account and to apply it to trading activity carried out in the name
+                and for the account of the Client.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The credit remains on the trading account until 25 October 2026. No
+                profit shall be withdrawn until the Credit Amount has first been paid
+                out in full.
+              </p>
+            </section>
+
+            <section class="clause" id="s6">
+              <h2><span>§ 6</span> Term</h2>
+              <p>
+                <span class="num">(1)</span>
+                This Agreement shall commence on execution. The credit shall remain
+                added to the trading account until 25 October 2026.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The Credit Amount shall be paid out in full on or before 25 October
+                2026. Ordinary termination before that date shall be excluded.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The right of either Party to terminate this Agreement for good cause
+                with immediate effect shall remain unaffected, to the extent permitted
+                by applicable law.
+              </p>
+            </section>
+
+            <section class="clause" id="s7">
+              <h2><span>§ 7</span> Payout and Withdrawal of Profit</h2>
+              <p>
+                <span class="num">(1)</span>
+                The Credit Amount may be used only within the Client’s trading account
+                and only for trading carried out through the Broker.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The credit shall be paid out in full before any profit is withdrawn
+                from the trading account. No profit shall be paid or withdrawn while
+                any part of the Credit Amount remains outstanding.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The Manager shall confirm to the Client once the credit has been added
+                to the trading account, and again once the credit has been paid out,
+                stating the Credit Amount and the relevant date.
+              </p>
+            </section>
+
+            <section class="clause" id="s8">
+              <h2><span>§ 8</span> Manager’s Obligations</h2>
+              <p>The Manager shall, in particular:</p>
+              <p>
+                <span class="num">(a)</span>
+                accept this credit request only where the trading account balance is
+                at least EUR 2,500.00 and the Credit Amount is at least EUR 1,000.00;
+              </p>
+              <p>
+                <span class="num">(b)</span>
+                add the agreed Credit Amount to the Client’s trading account;
+              </p>
+              <p>
+                <span class="num">(c)</span>
+                withhold any withdrawal of profit until the Credit Amount has been
+                paid out in full; and
+              </p>
+              <p>
+                <span class="num">(d)</span>
+                act in accordance with this Agreement and the applicable contractual
+                and legal requirements.
+              </p>
+            </section>
+
+            <section class="clause" id="s9">
+              <h2><span>§ 9</span> Client’s Obligations</h2>
+              <p>The Client shall, in particular:</p>
+              <p>
+                <span class="num">(a)</span>
+                maintain a trading account balance of at least EUR 2,500.00 at the
+                time this credit request is made;
+              </p>
+              <p>
+                <span class="num">(b)</span>
+                request a credit of at least EUR 1,000.00 to be added to the trading
+                account;
+              </p>
+              <p>
+                <span class="num">(c)</span>
+                pay out the Credit Amount in full on or before 25 October 2026, and
+                in any event before withdrawing any profit; and
+              </p>
+              <p>
+                <span class="num">(d)</span>
+                provide the Manager and/or Broker with all information reasonably
+                required to add the credit and to comply with applicable legal and
+                regulatory requirements.
+              </p>
+            </section>
+
+            <section class="clause" id="s10">
+              <h2><span>§ 10</span> Final Provisions</h2>
+              <p>
+                <span class="num">(1)</span>
+                This Agreement constitutes the entire agreement between the Parties
+                with respect to its subject matter and supersedes all prior
+                discussions, correspondence and arrangements relating thereto.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                Amendments and supplements to this Agreement, including this written
+                form requirement, shall be made in writing.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                Should any provision of this Agreement be or become invalid or
+                unenforceable, the remaining provisions shall remain in full force and
+                effect. The invalid or unenforceable provision shall be replaced by a
+                valid provision that most closely reflects the commercial intent of the
+                Parties.
+              </p>
+              <p>
+                <span class="num">(4)</span>
+                This Agreement may be executed in counterparts, including electronic
+                counterparts, each of which shall be deemed an original, and all of
+                which together shall constitute one and the same instrument.
+              </p>
+            </section>
+
+            <section class="execution clause" id="execution">
+              <h2>Execution</h2>
+              <p>
+                IN WITNESS WHEREOF, the Client has executed this Credit Request as of
+                the date first written above, and requests that the Credit Amount be
+                added to the Client’s trading account.
+              </p>
+              <p>
+                Place of signature:
+                <input class="blank date-field" id="place" type="text" value="South Africa" />
+              </p>
+              <p>
+                By signing below, the Client confirms that the Client has read this
+                Credit Request in full, that the trading account balance is at least
+                EUR 2,500.00, that the credit to be added is at least EUR 1,000.00,
+                and agrees to be bound by its terms.
+              </p>
+
+              <div class="stamp" id="executedStamp" hidden>
+                <span>Executed</span>
+                <strong id="executedWhen"></strong>
+              </div>
+
+              <div class="sig-grid single">
+                <div class="sig-col printed">
+                  <p class="sig-party">The Manager</p>
+                  <p class="sig-entity" data-for="managerName">KaraFX</p>
+                  <p class="sig-note">
+                    Account Manager
+                    <strong data-for="accountManager">Thomas Anderson</strong>
+                  </p>
+                  <p class="sig-caption">For record only — no manager signature required</p>
+                </div>
+
+                <div class="sig-col">
+                  <p class="sig-party">The Client</p>
+                  <p class="sig-entity" data-for="clientName">Pieter Willem</p>
+                  <div class="sig-pad-wrap no-print-tools">
+                    <canvas class="sig-pad" id="clientPad" width="640" height="220"></canvas>
+                    <p class="typed-sig" id="clientTypedPreview"></p>
+                  </div>
+                  <img class="sig-image" id="clientSigImage" alt="" hidden />
+                  <div class="sig-line"></div>
+                  <p class="sig-caption">Client signature</p>
+                  <label class="sig-field">
+                    Name
+                    <input id="clientSignatory" type="text" value="Pieter Willem" />
+                  </label>
+                  <label class="sig-field">
+                    Date
+                    <input id="clientSignDate" type="text" readonly />
+                  </label>
+                  <div class="sig-tools no-export">
+                    <button type="button" class="btn tiny" data-clear="clientPad">Clear</button>
+                    <span class="hint">Draw or use the typed name</span>
+                  </div>
+                </div>
+              </div>
+
+              <label class="agree no-export">
+                <input type="checkbox" id="agree" />
+                <span>
+                  I confirm that I have read this Credit Request, that my trading
+                  account balance is at least EUR 2,500.00, and that the credit to be
+                  added is at least EUR 1,000.00.
+                </span>
+              </label>
+
+              <div class="execute-bar no-export" id="executeBar">
+                <button type="button" class="btn primary large" id="executeBtn">
+                  Sign &amp; execute credit request
+                </button>
+                <p class="execute-hint" id="formHint">
+                  Sign as the Client, then execute to enable the signed credit request PDF.
+                </p>
+              </div>
+
+              <div class="download-panel no-export" id="downloadPanel" hidden>
+                <div>
+                  <p class="download-kicker">Executed original</p>
+                  <h3>Download signed PDF</h3>
+                  <p>
+                    The PDF includes the completed credit particulars, the full credit
+                    request, and the signature applied above.
+                  </p>
+                </div>
+                <button type="button" class="btn primary large" id="downloadBtnBottom">
+                  Download PDF
+                </button>
+              </div>
+            </section>
+
+            <footer class="doc-foot">
+              <span>KaraFX — Confidential</span>
+              <span id="footRef">Credit Request</span>
+            </footer>
+          </article>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js?v=14"></script>
+  </body>
+</html>
