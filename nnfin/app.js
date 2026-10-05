@@ -453,6 +453,61 @@ async function executeAgreement(clientPad) {
   showToast("Agreement executed. You can download the signed PDF.");
 }
 
+const GATE_KEY = "kfx_agreement_ok";
+const GATE_HASH = "54dd12255d838a33d4cb6ed95daf2f9412e00e635300e4d9631673d3f28a819e";
+
+async function sha256Hex(value) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function unlockAgreement() {
+  document.body.classList.add("unlocked");
+  const stage = document.querySelector(".stage");
+  if (stage) stage.hidden = false;
+  const gate = $("gate");
+  if (gate) gate.hidden = true;
+  try {
+    sessionStorage.setItem(GATE_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function initGate() {
+  if (sessionStorage.getItem(GATE_KEY) === "1") {
+    unlockAgreement();
+    init();
+    return;
+  }
+
+  const form = $("gateForm");
+  const field = $("gatePassword");
+  const err = $("gateErr");
+  if (!form || !field) {
+    unlockAgreement();
+    init();
+    return;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    err.hidden = true;
+    const hash = await sha256Hex(field.value);
+    if (hash !== GATE_HASH) {
+      err.hidden = false;
+      field.focus();
+      field.select();
+      return;
+    }
+    unlockAgreement();
+    init();
+  });
+
+  field.focus();
+}
+
 function init() {
   const today = currentDate();
   $("agreementDate").value = formatLongDate(today);
@@ -515,4 +570,4 @@ function init() {
   updateAmountWords();
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", initGate);

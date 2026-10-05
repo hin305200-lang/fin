@@ -11,10 +11,22 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body>
-    <div class="stage">
+    <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+      <form class="gate-card" id="gateForm">
+        <img src="assets/logo.png" alt="KaraFX" />
+        <p class="gate-kicker">KaraFX</p>
+        <h1 id="gateTitle">Agreement password</h1>
+        <p class="gate-copy">Enter the password to open the Client Investment Agreement.</p>
+        <label class="gate-label" for="gatePassword">Password</label>
+        <input id="gatePassword" name="password" type="password" autocomplete="current-password" required />
+        <p class="gate-err" id="gateErr" hidden>The password is not correct.</p>
+        <button type="submit" class="btn primary large">Open agreement</button>
+      </form>
+    </div>
+    <div class="stage" hidden>
       <header class="chrome">
         <div class="chrome-brand">
           <img src="assets/logo.png" alt="KaraFX" />
@@ -582,6 +594,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=15"></script>
   </body>
 </html>

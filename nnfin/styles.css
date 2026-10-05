@@ -860,6 +860,100 @@ body.executed .sig-field input {
   margin: 14mm 14mm 16mm;
 }
 
+.gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #fff;
+}
+
+.gate-card {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 36px 32px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.gate-card img {
+  width: 118px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.gate-kicker {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.gate-card h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.gate-copy,
+.gate-err,
+.gate-label {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.gate-label {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gate-card input {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 16px;
+}
+
+.gate-card input:focus {
+  outline: none;
+  border-bottom-color: var(--crimson);
+}
+
+.gate-err {
+  color: var(--crimson);
+}
+
+.gate-card .btn {
+  margin-top: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+body:not(.unlocked) .stage {
+  display: none;
+}
+
+body.unlocked .gate {
+  display: none;
+}
+
 @media print {
   body {
     background: #fff;
@@ -869,7 +963,8 @@ body.executed .sig-field input {
   .chrome,
   .toc,
   .no-export,
-  .toast {
+  .toast,
+  .gate {
     display: none !important;
   }
 
