@@ -1,4 +1,4 @@
-const MIN_AMOUNT = 1000;
+const MIN_AMOUNT = 2500;
 const PAGE_WIDTH_PX = 794;
 const PAGE_HEIGHT_PX = 1123;
 
@@ -210,7 +210,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Pieter Willem" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "Fransien Aucamp" : "KaraFX";
       return;
     }
     if (el.dataset.for === "accountManager") {
@@ -418,7 +418,7 @@ async function executeAgreement(clientPad) {
     return;
   }
   if (amount < MIN_AMOUNT) {
-    showToast("The investment amount must be at least EUR 1,000.00.");
+    showToast("The investment amount must be at least EUR 2,500.00.");
     return;
   }
   if (!clientSignatory) {
