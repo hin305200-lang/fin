@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KaraFX — Trading Account Credit Request</title>
+    <title>KaraFX — Client Investment Agreement</title>
     <link rel="icon" href="assets/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,7 +20,7 @@
           <img src="assets/logo.png" alt="KaraFX" />
           <div>
             <p class="chrome-kicker">KaraFX</p>
-            <p class="chrome-title">Trading Account Credit Request</p>
+            <p class="chrome-title">Client Investment Agreement</p>
           </div>
         </div>
         <div class="chrome-actions">
@@ -39,18 +39,19 @@
             <a href="#parties">Parties</a>
             <a href="#particulars">Particulars</a>
             <a href="#s1">§ 1 Subject Matter</a>
-            <a href="#s2">§ 2 Minimum Balance</a>
-            <a href="#s3">§ 3 Minimum Credit</a>
-            <a href="#s4">§ 4 Addition of Credit</a>
-            <a href="#s5">§ 5 Trading Account</a>
-            <a href="#s6">§ 6 Term</a>
-            <a href="#s7">§ 7 Payout &amp; Profit</a>
+            <a href="#s2">§ 2 Minimum Amount</a>
+            <a href="#s3">§ 3 Funding</a>
+            <a href="#s4">§ 4 Strategy</a>
+            <a href="#s5">§ 5 Term</a>
+            <a href="#s6">§ 6 Return</a>
+            <a href="#s7">§ 7 Insurance</a>
             <a href="#s8">§ 8 Manager</a>
             <a href="#s9">§ 9 Client</a>
-            <a href="#s10">§ 10 Final Provisions</a>
+            <a href="#s10">§ 10 Fees &amp; Taxes</a>
+            <a href="#s11">§ 11 Final Provisions</a>
             <a href="#execution">Execution &amp; signatures</a>
           </nav>
-          <p class="toc-note">Review the credit request, sign as the Client, then download the executed PDF.</p>
+          <p class="toc-note">Review the agreement, sign as the Client, then download the executed PDF.</p>
         </aside>
 
         <main>
@@ -61,19 +62,19 @@
               </div>
               <div class="doc-head-right">
                 <p>Private &amp; Confidential</p>
-                <p>Request No. <span id="agreementNo">KFX-CR-0000</span></p>
+                <p>Agreement No. <span id="agreementNo">KFX-IA-0000</span></p>
                 <p>Date of issue <span id="issueDate">—</span></p>
               </div>
             </div>
 
-            <p class="instrument">Trading Account Credit Request</p>
-            <h1>Credit Request</h1>
-            <p class="doc-sub">KaraFX · Credit added to the trading account</p>
+            <p class="instrument">Client Investment Agreement</p>
+            <h1>Investment Agreement</h1>
+            <p class="doc-sub">KaraFX · Capital Management</p>
             <div class="double-rule"></div>
 
             <section id="parties">
               <p class="open-line">
-                This Credit Request (hereinafter the “Agreement”) is made on
+                This Investment Agreement (hereinafter the “Agreement”) is made on
                 <input class="blank date-field" id="agreementDate" type="text" />
               </p>
               <p>It is entered into between:</p>
@@ -149,13 +150,13 @@
             <section class="schedule" id="particulars">
               <div class="schedule-head">
                 <span>Schedule 1</span>
-                <strong>Credit Particulars</strong>
+                <strong>Investment Particulars</strong>
               </div>
               <table>
                 <tbody>
                   <tr>
                     <th>A</th>
-                    <td>Credit to Add</td>
+                    <td>Investment Amount</td>
                     <td>
                       EUR
                       <input
@@ -170,51 +171,31 @@
                   </tr>
                   <tr>
                     <th>B</th>
-                    <td>Minimum Credit</td>
-                    <td>EUR 1,000.00 (one thousand euros) to add to the trading account</td>
+                    <td>Minimum Amount</td>
+                    <td>EUR 1,000.00 (one thousand euros)</td>
                   </tr>
                   <tr>
                     <th>C</th>
-                    <td>Minimum Balance</td>
-                    <td>EUR 2,500.00 (two thousand five hundred euros) required to request credit</td>
+                    <td>Fixed Term</td>
+                    <td>Six (6) months from receipt of the investment capital</td>
                   </tr>
                   <tr>
                     <th>D</th>
-                    <td>Trading Account Balance</td>
-                    <td>
-                      EUR
-                      <input
-                        class="blank amount"
-                        id="balance"
-                        type="text"
-                        value="2,500.00"
-                        inputmode="decimal"
-                      />
-                      <span class="words">(<span id="balanceWords">two thousand five hundred euros</span>)</span>
-                    </td>
+                    <td>Minimum Return</td>
+                    <td>3.8% per month on the invested capital</td>
                   </tr>
                   <tr>
                     <th>E</th>
-                    <td>Where Credit Is Added</td>
-                    <td>The Client’s trading account</td>
+                    <td>Performance Fee</td>
+                    <td>20% of profits actually generated</td>
                   </tr>
                   <tr>
                     <th>F</th>
-                    <td>Credit End Date</td>
-                    <td>30 September 2026</td>
+                    <td>Capital Protection</td>
+                    <td>Insurance maintained with Lloyd’s of London</td>
                   </tr>
                   <tr>
                     <th>G</th>
-                    <td>Payout before Profit</td>
-                    <td>The credit shall be paid out in full before any profit is withdrawn</td>
-                  </tr>
-                  <tr>
-                    <th>H</th>
-                    <td>Credit Provider</td>
-                    <td>NN Finanz (Marketplace) and NN Group</td>
-                  </tr>
-                  <tr>
-                    <th>I</th>
                     <td>Broker / Cooperation Partner</td>
                     <td>
                       <input
@@ -230,120 +211,98 @@
             </section>
 
             <section class="clause" id="s1">
-              <h2><span>§ 1</span> Subject Matter of the Credit Request</h2>
+              <h2><span>§ 1</span> Subject Matter of the Agreement</h2>
               <p>
                 <span class="num">(1)</span>
-                The subject matter of this Agreement is the Client’s request that the
-                Manager add credit to the Client’s trading account, and the Manager’s
-                acceptance of that request in accordance with this Agreement.
+                The subject matter of this Agreement is the investment of capital
+                provided by the Client for a fixed term, to be managed and invested by
+                the Manager in accordance with the provisions of this Agreement.
               </p>
               <p>
                 <span class="num">(2)</span>
-                The Credit Amount stated in Schedule 1 shall be added to the Client’s
-                trading account. It is not paid out to the Client as a separate cash
-                transfer.
-              </p>
-              <p>
-                <span class="num">(3)</span>
-                The credit is provided by NN Finanz and NN Group. NN Finanz
-                (Marketplace) is a financial platform that serves as a marketplace
-                connecting savers with partner banks and credit unions. It provides
-                access to high-yield call money (Tagesgeld), fixed-term deposits
-                (Festgeld), and simple ETF portfolios. NN Group is a major
-                international financial services company focused on insurance,
-                pensions, and investments and credit for investments.
+                The investment shall have a fixed term of six (6) months commencing on
+                the date on which the investment capital is actually received by the
+                Manager.
               </p>
             </section>
 
             <section class="clause" id="s2">
-              <h2><span>§ 2</span> Minimum Balance to Request Credit</h2>
+              <h2><span>§ 2</span> Minimum Investment Amount</h2>
               <p>
                 <span class="num">(1)</span>
-                A credit request may be made only where the balance of the Client’s
-                trading account is at least EUR 2,500.00 (in words: two thousand five
-                hundred euros).
-              </p>
-              <p>
-                <span class="num">(2)</span>
-                Where the trading account balance is below EUR 2,500.00, this credit
-                request shall not be accepted and no credit shall be added.
-              </p>
-              <p>
-                <span class="num">(3)</span>
-                The trading account balance stated in Schedule 1 is the balance on
-                which this request is made. The Client confirms that this balance is
-                not less than the minimum required under this § 2.
-              </p>
-            </section>
-
-            <section class="clause" id="s3">
-              <h2><span>§ 3</span> Minimum Credit to Add</h2>
-              <p>
-                <span class="num">(1)</span>
-                The minimum credit to be added to the trading account shall be
+                The minimum investment amount to be provided by the Client shall be
                 EUR 1,000.00 (in words: one thousand euros).
               </p>
               <p>
                 <span class="num">(2)</span>
-                A credit request below this minimum amount shall not be accepted.
+                Investments below this minimum amount shall not be accepted.
+              </p>
+            </section>
+
+            <section class="clause" id="s3">
+              <h2><span>§ 3</span> Client’s Funding Obligation</h2>
+              <p>
+                <span class="num">(1)</span>
+                The Client undertakes to transfer the investment capital exclusively to
+                the bank account or wallet designated in writing by the Manager.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The investment shall only be deemed to have been validly made once the
+                relevant amount has been irrevocably credited to the account or wallet
+                designated by the Manager.
               </p>
             </section>
 
             <section class="clause" id="s4">
-              <h2><span>§ 4</span> Addition of Credit</h2>
+              <h2><span>§ 4</span> Investment Strategy and Cooperation</h2>
               <p>
                 <span class="num">(1)</span>
-                Upon execution of this Agreement, and provided the conditions in § 2
-                and § 3 are met, the Manager shall add the Credit Amount provided by
-                NN Finanz and NN Group to the Client’s trading account.
+                The investment shall be carried out within the framework of an
+                operational cooperation between the Manager and
+                <span class="live" data-for="brokerName">[Name of Broker / Cooperation Partner]</span>
+                (hereinafter the “Broker”).
               </p>
               <p>
                 <span class="num">(2)</span>
-                The credit shall be deemed added only once the Credit Amount has been
-                credited to the trading account.
+                Within the scope of the investment strategy agreed with the Client, the
+                Manager shall independently determine, using due professional judgment,
+                the specific allocation and deployment of the invested capital.
               </p>
               <p>
                 <span class="num">(3)</span>
-                The credit is added within the framework of the operational cooperation
-                between the Manager and
-                <span class="live" data-for="brokerName">[Name of Broker / Cooperation Partner]</span>
-                (hereinafter the “Broker”).
+                The Client hereby authorizes the Broker, to the extent permitted by the
+                applicable power of attorney and the contractual arrangements, to make
+                all investment and trading decisions in the name and for the account of
+                the Client that are necessary to implement the agreed investment
+                strategy and to execute the corresponding transactions.
+              </p>
+              <p>
+                <span class="num">(4)</span>
+                The power of attorney shall include, in particular, the authority to
+                place, amend and cancel purchase and sale orders, as well as to
+                reallocate the invested capital within the scope of the agreed
+                investment strategy.
+              </p>
+              <p>
+                <span class="num">(5)</span>
+                Any material change to the agreed investment strategy shall require the
+                Client’s prior consent, unless otherwise permitted by applicable law or
+                expressly agreed in this Agreement.
               </p>
             </section>
 
             <section class="clause" id="s5">
-              <h2><span>§ 5</span> Trading Account</h2>
+              <h2><span>§ 5</span> Term and Termination</h2>
               <p>
                 <span class="num">(1)</span>
-                The credit shall be added solely to the trading account held for the
-                Client with the Broker.
+                This Agreement shall commence on the date on which the investment
+                capital is actually received and shall have a fixed term of six (6)
+                months.
               </p>
               <p>
                 <span class="num">(2)</span>
-                The Client hereby authorizes the Broker, to the extent permitted by the
-                applicable arrangements, to record the Credit Amount on the trading
-                account and to apply it to trading activity carried out in the name
-                and for the account of the Client.
-              </p>
-              <p>
-                <span class="num">(3)</span>
-                The credit remains on the trading account until 30 September 2026. No
-                profit shall be withdrawn until the Credit Amount has first been paid
-                out in full.
-              </p>
-            </section>
-
-            <section class="clause" id="s6">
-              <h2><span>§ 6</span> Term</h2>
-              <p>
-                <span class="num">(1)</span>
-                This Agreement shall commence on execution. The credit shall remain
-                added to the trading account until 30 September 2026.
-              </p>
-              <p>
-                <span class="num">(2)</span>
-                The Credit Amount shall be paid out in full on or before 30 September
-                2026. Ordinary termination before that date shall be excluded.
+                Ordinary termination during the fixed term shall be excluded.
               </p>
               <p>
                 <span class="num">(3)</span>
@@ -353,24 +312,44 @@
               </p>
             </section>
 
-            <section class="clause" id="s7">
-              <h2><span>§ 7</span> Payout and Withdrawal of Profit</h2>
+            <section class="clause" id="s6">
+              <h2><span>§ 6</span> Minimum Return and Calculation of Returns</h2>
               <p>
                 <span class="num">(1)</span>
-                The Credit Amount may be used only within the Client’s trading account
-                and only for trading carried out through the Broker.
+                A minimum return of 3.8% per month on the invested capital shall be
+                agreed.
               </p>
               <p>
                 <span class="num">(2)</span>
-                The credit shall be paid out in full before any profit is withdrawn
-                from the trading account. No profit shall be paid or withdrawn while
-                any part of the Credit Amount remains outstanding.
+                The return shall be calculated and accounted for on a monthly basis.
               </p>
               <p>
                 <span class="num">(3)</span>
-                The Manager shall confirm to the Client once the credit has been added
-                to the trading account, and again once the credit has been paid out,
-                stating the Credit Amount and the relevant date.
+                Any calculation of the return shall be subject to the provisions of
+                this Agreement, including the applicable Performance Fee and any
+                legally required deductions.
+              </p>
+            </section>
+
+            <section class="clause" id="s7">
+              <h2><span>§ 7</span> Capital Protection Insurance</h2>
+              <p>
+                <span class="num">(1)</span>
+                Capital protection insurance shall be maintained with Lloyd’s of
+                London, subject to the terms and conditions of the applicable insurance
+                policy.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The insurance shall apply exclusively within the scope and subject to
+                the conditions, exclusions and limitations of the relevant insurance
+                policy.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The Manager shall provide the Client, upon request, with appropriate
+                evidence of the existence and continued maintenance of the insurance
+                coverage.
               </p>
             </section>
 
@@ -379,22 +358,24 @@
               <p>The Manager shall, in particular:</p>
               <p>
                 <span class="num">(a)</span>
-                accept this credit request only where the trading account balance is
-                at least EUR 2,500.00 and the Credit Amount is at least EUR 1,000.00;
+                manage and invest the invested capital with due professional care and
+                in accordance with generally accepted commercial standards;
               </p>
               <p>
                 <span class="num">(b)</span>
-                add the agreed Credit Amount to the Client’s trading account;
+                provide the Client with monthly statements showing the development and,
+                where applicable, the results of the investment;
               </p>
               <p>
                 <span class="num">(c)</span>
-                withhold any withdrawal of profit until the Credit Amount has been
-                paid out in full; and
+                maintain the capital protection insurance referred to in § 7 throughout
+                the term of this Agreement, subject to the terms of the applicable
+                insurance policy; and
               </p>
               <p>
                 <span class="num">(d)</span>
-                act in accordance with this Agreement and the applicable contractual
-                and legal requirements.
+                act in accordance with the investment strategy agreed with the Client
+                and the applicable contractual and legal requirements.
               </p>
             </section>
 
@@ -403,29 +384,76 @@
               <p>The Client shall, in particular:</p>
               <p>
                 <span class="num">(a)</span>
-                maintain a trading account balance of at least EUR 2,500.00 at the
-                time this credit request is made;
+                provide the agreed investment amount in full and on time;
               </p>
               <p>
                 <span class="num">(b)</span>
-                request a credit of at least EUR 1,000.00 to be added to the trading
-                account;
+                provide the Manager and/or Broker with all information and
+                documentation reasonably required for the proper implementation of the
+                investment and for compliance with applicable legal and regulatory
+                requirements; and
               </p>
               <p>
                 <span class="num">(c)</span>
-                pay out the Credit Amount in full on or before 30 September 2026, and
-                in any event before withdrawing any profit; and
-              </p>
-              <p>
-                <span class="num">(d)</span>
-                provide the Manager and/or Broker with all information reasonably
-                required to add the credit and to comply with applicable legal and
-                regulatory requirements.
+                provide the Broker with the Client’s tax identification number (Tax
+                ID), where required by applicable law.
               </p>
             </section>
 
             <section class="clause" id="s10">
-              <h2><span>§ 10</span> Final Provisions</h2>
+              <h2><span>§ 10</span> Fees and Taxes</h2>
+              <p>
+                <span class="num">(1)</span>
+                The Manager shall receive a Performance Fee of 20% of the profits
+                actually generated by the investment.
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                The Performance Fee shall be calculated monthly on the basis of the
+                profit determined for the relevant calculation period and shall be
+                separately invoiced to the Client. Any Performance Fee accrued and
+                remaining unpaid at the end of the contractual term shall be paid in
+                full prior to any distribution of the relevant amount to the Client.
+              </p>
+              <p>
+                <span class="num">(3)</span>
+                The Client shall provide the Broker with the Client’s tax
+                identification number (Tax ID). To the extent required by applicable
+                law, the Broker shall report investment income and related tax amounts
+                to the competent tax authority and, where legally required and
+                authorized, withhold and remit the relevant amounts.
+              </p>
+              <p>
+                <span class="num">(4)</span>
+                The Client shall be responsible for all taxes payable by the Client in
+                connection with the investment and any investment income. Where taxes
+                are required to be withheld prior to payment or distribution, the
+                relevant amount may, to the extent legally permissible and required, be
+                withheld from the amount otherwise payable to the Client and remitted
+                to the competent tax authority.
+              </p>
+              <p>
+                <span class="num">(5)</span>
+                The Client’s personal tax obligations shall remain unaffected by any
+                reporting, withholding or remittance carried out by the Broker. The
+                Client shall remain responsible for complying with all personal tax
+                filing and reporting obligations applicable to the Client, except to
+                the extent that such obligations are legally assumed by the Broker or
+                another competent party.
+              </p>
+              <p>
+                <span class="num">(6)</span>
+                The Parties acknowledge that the specific tax treatment of investment
+                income may depend on the Client’s jurisdiction, tax status, investment
+                structure and the role performed by the Broker. The Parties shall
+                therefore ensure that any withholding, reporting and tax-remittance
+                provisions are consistent with the applicable legal and regulatory
+                requirements.
+              </p>
+            </section>
+
+            <section class="clause" id="s11">
+              <h2><span>§ 11</span> Final Provisions</h2>
               <p>
                 <span class="num">(1)</span>
                 This Agreement constitutes the entire agreement between the Parties
@@ -456,9 +484,8 @@
             <section class="execution clause" id="execution">
               <h2>Execution</h2>
               <p>
-                IN WITNESS WHEREOF, the Client has executed this Credit Request as of
-                the date first written above, and requests that the Credit Amount be
-                added to the Client’s trading account.
+                IN WITNESS WHEREOF, the Client has executed this Agreement as of the
+                date first written above.
               </p>
               <p>
                 Place of signature:
@@ -466,9 +493,7 @@
               </p>
               <p>
                 By signing below, the Client confirms that the Client has read this
-                Credit Request in full, that the trading account balance is at least
-                EUR 2,500.00, that the credit to be added is at least EUR 1,000.00,
-                and agrees to be bound by its terms.
+                Agreement in full and agrees to be bound by its terms.
               </p>
 
               <div class="stamp" id="executedStamp" hidden>
@@ -515,18 +540,17 @@
               <label class="agree no-export">
                 <input type="checkbox" id="agree" />
                 <span>
-                  I confirm that I have read this Credit Request, that my trading
-                  account balance is at least EUR 2,500.00, and that the credit to be
-                  added is at least EUR 1,000.00.
+                  I, Pieter Willem, confirm that I have read this Investment Agreement
+                  and that the particulars stated above are correct.
                 </span>
               </label>
 
               <div class="execute-bar no-export" id="executeBar">
                 <button type="button" class="btn primary large" id="executeBtn">
-                  Sign &amp; execute credit request
+                  Sign &amp; execute agreement
                 </button>
                 <p class="execute-hint" id="formHint">
-                  Sign as the Client, then execute to enable the signed credit request PDF.
+                  Sign as the Client, then execute to enable the signed PDF download.
                 </p>
               </div>
 
@@ -535,8 +559,8 @@
                   <p class="download-kicker">Executed original</p>
                   <h3>Download signed PDF</h3>
                   <p>
-                    The PDF includes the completed credit particulars, the full credit
-                    request, and the signature applied above.
+                    The PDF includes the completed particulars, the full agreement, and
+                    the signatures applied above.
                   </p>
                 </div>
                 <button type="button" class="btn primary large" id="downloadBtnBottom">
@@ -547,7 +571,7 @@
 
             <footer class="doc-foot">
               <span>KaraFX — Confidential</span>
-              <span id="footRef">Credit Request</span>
+              <span id="footRef">Investment Agreement</span>
             </footer>
           </article>
         </main>
@@ -558,6 +582,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=13"></script>
   </body>
 </html>

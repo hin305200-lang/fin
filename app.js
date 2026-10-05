@@ -1,5 +1,4 @@
-const MIN_CREDIT = 1000;
-const MIN_BALANCE = 2500;
+const MIN_AMOUNT = 1000;
 const PAGE_WIDTH_PX = 794;
 const PAGE_HEIGHT_PX = 1123;
 
@@ -90,7 +89,7 @@ function pad2(n) {
 
 function makeAgreementNo(date) {
   const serial = `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
-  return `KFX-CR-${serial}`;
+  return `KFX-IA-${serial}`;
 }
 
 class SignaturePad {
@@ -226,7 +225,6 @@ function syncLiveFields() {
 
 function updateAmountWords() {
   $("amountWords").textContent = numberToWords(parseAmount($("amount").value));
-  $("balanceWords").textContent = numberToWords(parseAmount($("balance").value));
 }
 
 function currentDate() {
@@ -261,7 +259,7 @@ function createPdfSheet(isFirst) {
     const head = document.createElement("div");
     head.className = "pdf-runhead";
     head.innerHTML =
-      '<img src="assets/logo.png" alt="KaraFX"><span>Trading Account Credit Request · Confidential</span>';
+      '<img src="assets/logo.png" alt="KaraFX"><span>Client Investment Agreement · Confidential</span>';
     sheet.appendChild(head);
   }
   return sheet;
@@ -396,7 +394,7 @@ async function makePdf() {
 
     const client = $("clientName").value.trim() || "Client";
     const safeClient = client.replace(/[^\w\- ]+/g, "").replace(/\s+/g, "_");
-    pdf.save(`KaraFX_Credit_Request_${safeClient}.pdf`);
+    pdf.save(`KaraFX_Investment_Agreement_${safeClient}.pdf`);
     showToast(`Signed PDF downloaded (${paginated.pages.length} pages).`);
   } catch (error) {
     console.error(error);
@@ -414,18 +412,13 @@ async function executeAgreement(clientPad) {
   const clientName = $("clientName").value.trim();
   const clientSignatory = $("clientSignatory").value.trim();
   const amount = parseAmount($("amount").value);
-  const balance = parseAmount($("balance").value);
 
   if (!clientName) {
     showToast("Please complete the Client name.");
     return;
   }
-  if (balance < MIN_BALANCE) {
-    showToast("The trading account balance must be at least EUR 2,500.00 to request credit.");
-    return;
-  }
-  if (amount < MIN_CREDIT) {
-    showToast("The credit to add must be at least EUR 1,000.00.");
+  if (amount < MIN_AMOUNT) {
+    showToast("The investment amount must be at least EUR 1,000.00.");
     return;
   }
   if (!clientSignatory) {
@@ -433,7 +426,7 @@ async function executeAgreement(clientPad) {
     return;
   }
   if (!$("agree").checked) {
-    showToast("Please confirm that you have read the credit request.");
+    showToast("Please confirm that you have read the agreement.");
     return;
   }
 
@@ -457,7 +450,7 @@ async function executeAgreement(clientPad) {
   $("downloadPanel").hidden = false;
   $("executeBar").hidden = true;
   document.body.classList.add("executed");
-  showToast("Credit request executed. You can download the signed PDF.");
+  showToast("Agreement executed. You can download the signed PDF.");
 }
 
 function init() {
@@ -478,13 +471,11 @@ function init() {
     });
   });
 
-  ["amount", "balance"].forEach((id) => {
-    $(id).addEventListener("input", updateAmountWords);
-    $(id).addEventListener("blur", () => {
-      const value = parseAmount($(id).value);
-      if (value) $(id).value = formatAmount(value);
-      updateAmountWords();
-    });
+  $("amount").addEventListener("input", updateAmountWords);
+  $("amount").addEventListener("blur", () => {
+    const value = parseAmount($("amount").value);
+    if (value) $("amount").value = formatAmount(value);
+    updateAmountWords();
   });
 
   ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
