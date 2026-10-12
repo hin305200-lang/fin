@@ -1,4 +1,5 @@
-const MIN_AMOUNT = 2500;
+const MIN_CREDIT = 1000;
+const MIN_BALANCE = 2500;
 const PAGE_WIDTH_PX = 794;
 const PAGE_HEIGHT_PX = 1123;
 
@@ -89,7 +90,7 @@ function pad2(n) {
 
 function makeAgreementNo(date) {
   const serial = `${date.getFullYear()}${pad2(date.getMonth() + 1)}${pad2(date.getDate())}`;
-  return `KFX-IA-${serial}`;
+  return `KFX-CR-${serial}`;
 }
 
 class SignaturePad {
@@ -210,7 +211,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Fransien Aucamp" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "Pieter Willem" : "KaraFX";
       return;
     }
     if (el.dataset.for === "accountManager") {
@@ -225,6 +226,7 @@ function syncLiveFields() {
 
 function updateAmountWords() {
   $("amountWords").textContent = numberToWords(parseAmount($("amount").value));
+  $("balanceWords").textContent = numberToWords(parseAmount($("balance").value));
 }
 
 function currentDate() {
@@ -259,7 +261,7 @@ function createPdfSheet(isFirst) {
     const head = document.createElement("div");
     head.className = "pdf-runhead";
     head.innerHTML =
-      '<img src="assets/logo.png" alt="KaraFX"><span>Client Investment Agreement · Confidential</span>';
+      '<img src="assets/logo.png" alt="KaraFX"><span>Trading Account Credit Request · Confidential</span>';
     sheet.appendChild(head);
   }
   return sheet;
@@ -394,7 +396,7 @@ async function makePdf() {
 
     const client = $("clientName").value.trim() || "Client";
     const safeClient = client.replace(/[^\w\- ]+/g, "").replace(/\s+/g, "_");
-    pdf.save(`KaraFX_Investment_Agreement_${safeClient}.pdf`);
+    pdf.save(`KaraFX_Credit_Request_${safeClient}.pdf`);
     showToast(`Signed PDF downloaded (${paginated.pages.length} pages).`);
   } catch (error) {
     console.error(error);
@@ -412,13 +414,18 @@ async function executeAgreement(clientPad) {
   const clientName = $("clientName").value.trim();
   const clientSignatory = $("clientSignatory").value.trim();
   const amount = parseAmount($("amount").value);
+  const balance = parseAmount($("balance").value);
 
   if (!clientName) {
     showToast("Please complete the Client name.");
     return;
   }
-  if (amount < MIN_AMOUNT) {
-    showToast("The investment amount must be at least EUR 2,500.00.");
+  if (balance < MIN_BALANCE) {
+    showToast("The trading account balance must be at least EUR 2,500.00 to request credit.");
+    return;
+  }
+  if (amount < MIN_CREDIT) {
+    showToast("The credit to add must be at least EUR 1,000.00.");
     return;
   }
   if (!clientSignatory) {
@@ -426,7 +433,7 @@ async function executeAgreement(clientPad) {
     return;
   }
   if (!$("agree").checked) {
-    showToast("Please confirm that you have read the agreement.");
+    showToast("Please confirm that you have read the credit request.");
     return;
   }
 
@@ -450,62 +457,7 @@ async function executeAgreement(clientPad) {
   $("downloadPanel").hidden = false;
   $("executeBar").hidden = true;
   document.body.classList.add("executed");
-  showToast("Agreement executed. You can download the signed PDF.");
-}
-
-const GATE_KEY = "kfx_agreement_ok";
-const GATE_HASH = "54dd12255d838a33d4cb6ed95daf2f9412e00e635300e4d9631673d3f28a819e";
-
-async function sha256Hex(value) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function unlockAgreement() {
-  document.body.classList.add("unlocked");
-  const stage = document.querySelector(".stage");
-  if (stage) stage.hidden = false;
-  const gate = $("gate");
-  if (gate) gate.hidden = true;
-  try {
-    sessionStorage.setItem(GATE_KEY, "1");
-  } catch {
-    /* ignore */
-  }
-}
-
-function initGate() {
-  if (sessionStorage.getItem(GATE_KEY) === "1") {
-    unlockAgreement();
-    init();
-    return;
-  }
-
-  const form = $("gateForm");
-  const field = $("gatePassword");
-  const err = $("gateErr");
-  if (!form || !field) {
-    unlockAgreement();
-    init();
-    return;
-  }
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    err.hidden = true;
-    const hash = await sha256Hex(field.value);
-    if (hash !== GATE_HASH) {
-      err.hidden = false;
-      field.focus();
-      field.select();
-      return;
-    }
-    unlockAgreement();
-    init();
-  });
-
-  field.focus();
+  showToast("Credit request executed. You can download the signed PDF.");
 }
 
 function init() {
@@ -526,11 +478,13 @@ function init() {
     });
   });
 
-  $("amount").addEventListener("input", updateAmountWords);
-  $("amount").addEventListener("blur", () => {
-    const value = parseAmount($("amount").value);
-    if (value) $("amount").value = formatAmount(value);
-    updateAmountWords();
+  ["amount", "balance"].forEach((id) => {
+    $(id).addEventListener("input", updateAmountWords);
+    $(id).addEventListener("blur", () => {
+      const value = parseAmount($(id).value);
+      if (value) $(id).value = formatAmount(value);
+      updateAmountWords();
+    });
   });
 
   ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
@@ -570,4 +524,4 @@ function init() {
   updateAmountWords();
 }
 
-document.addEventListener("DOMContentLoaded", initGate);
+document.addEventListener("DOMContentLoaded", init);
