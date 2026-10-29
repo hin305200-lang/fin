@@ -214,7 +214,7 @@ function syncLiveFields() {
       return;
     }
     if (el.dataset.for === "accountManager") {
-      el.textContent = "Thomas Anderson";
+      el.textContent = "";
       return;
     }
     if (el.classList.contains("live")) {
