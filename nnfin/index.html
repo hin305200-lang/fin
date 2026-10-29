@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body>
     <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
@@ -223,6 +223,11 @@
                     <td>Monthly Payout</td>
                     <td>3% of the invested capital, paid out on the 5th of each month</td>
                   </tr>
+                  <tr>
+                    <th>I</th>
+                    <td>Tax</td>
+                    <td>Tax shall be paid to HMRC before any profit is paid out</td>
+                  </tr>
                 </tbody>
               </table>
             </section>
@@ -349,8 +354,9 @@
               <p>
                 <span class="num">(4)</span>
                 Any calculation of the return shall be subject to the provisions of
-                this Agreement, including the applicable Performance Fee and any
-                legally required deductions.
+                this Agreement, including the applicable Performance Fee, the payment
+                of tax to HMRC before any profit is paid out, and any legally required
+                deductions.
               </p>
             </section>
 
@@ -440,20 +446,17 @@
               </p>
               <p>
                 <span class="num">(3)</span>
-                The Client shall provide the Broker with the Client’s tax
-                identification number (Tax ID). To the extent required by applicable
-                law, the Broker shall report investment income and related tax amounts
-                to the competent tax authority and, where legally required and
-                authorized, withhold and remit the relevant amounts.
+                All tax payable in connection with the investment and any investment
+                income shall be paid to HM Revenue &amp; Customs (HMRC) before any
+                profit is paid out to the Client. No profit shall be paid out until the
+                relevant tax has been paid to HMRC.
               </p>
               <p>
                 <span class="num">(4)</span>
-                The Client shall be responsible for all taxes payable by the Client in
-                connection with the investment and any investment income. Where taxes
-                are required to be withheld prior to payment or distribution, the
-                relevant amount may, to the extent legally permissible and required, be
-                withheld from the amount otherwise payable to the Client and remitted
-                to the competent tax authority.
+                The Client shall provide the Broker with the Client’s tax
+                identification number (Tax ID). The Broker shall report investment
+                income and related tax amounts to HMRC and shall withhold and remit the
+                relevant amounts to HMRC prior to any profit payout.
               </p>
               <p>
                 <span class="num">(5)</span>
@@ -605,6 +608,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=16"></script>
+    <script src="app.js?v=17"></script>
   </body>
 </html>
