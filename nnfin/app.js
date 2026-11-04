@@ -210,7 +210,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Shaun Alcock" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "Lucas Steyn" : "KaraFX";
       return;
     }
     if (el.dataset.for === "accountManager") {
