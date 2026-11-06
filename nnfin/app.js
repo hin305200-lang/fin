@@ -1,4 +1,3 @@
-const MIN_AMOUNT = 2500;
 const PAGE_WIDTH_PX = 794;
 const PAGE_HEIGHT_PX = 1123;
 
@@ -46,10 +45,8 @@ function chunkToWords(n) {
   return `${ONES[Math.floor(n / 100)]} hundred${rest ? " " + chunkToWords(rest) : ""}`;
 }
 
-function numberToWords(value) {
-  const amount = Math.round(Number(value));
-  if (!Number.isFinite(amount) || amount < 0) return "amount to be inserted";
-  if (amount === 0) return "zero euros";
+function integerToWords(amount) {
+  if (amount === 0) return "zero";
   const scales = ["", " thousand", " million", " billion"];
   let n = amount;
   let parts = [];
@@ -60,7 +57,17 @@ function numberToWords(value) {
     n = Math.floor(n / 1000);
     scale += 1;
   }
-  return `${parts.join(" ")} euros`;
+  return parts.join(" ");
+}
+
+function numberToWords(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 0) return "amount to be inserted";
+  const euros = Math.floor(n + 1e-9);
+  const cents = Math.round((n - euros) * 100);
+  const euroText = `${integerToWords(euros)} euros`;
+  if (!cents) return euroText;
+  return `${euroText} and ${integerToWords(cents)} cent${cents === 1 ? "" : "s"}`;
 }
 
 function parseAmount(raw) {
@@ -411,14 +418,9 @@ async function makePdf() {
 async function executeAgreement(clientPad) {
   const clientName = $("clientName").value.trim();
   const clientSignatory = $("clientSignatory").value.trim();
-  const amount = parseAmount($("amount").value);
 
   if (!clientName) {
     showToast("Please complete the Client name.");
-    return;
-  }
-  if (amount < MIN_AMOUNT) {
-    showToast("The investment amount must be at least EUR 2,500.00.");
     return;
   }
   if (!clientSignatory) {
