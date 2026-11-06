@@ -513,7 +513,8 @@ function init() {
   $("agreementDate").value = formatLongDate(today);
   $("issueDate").textContent = formatLongDate(today);
   $("clientSignDate").value = formatLongDate(today);
-  $("agreementNo").textContent = makeAgreementNo(today);
+  $("agreementNo").textContent = "KFX-IA-20261104";
+  $("agreementDate").value = "4 November 2026";
   $("footRef").textContent = $("agreementNo").textContent;
 
   const clientPad = new SignaturePad($("clientPad"));
