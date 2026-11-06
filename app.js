@@ -210,7 +210,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Fransien Aucamp" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "Shaun Alcock" : "KaraFX";
       return;
     }
     if (el.dataset.for === "accountManager") {
@@ -457,8 +457,8 @@ async function executeAgreement(clientPad) {
   showToast("Agreement executed. You can download the signed PDF.");
 }
 
-const GATE_KEY = "kfx_aucamp_ok";
-const GATE_HASH = "54dd12255d838a33d4cb6ed95daf2f9412e00e635300e4d9631673d3f28a819e";
+const GATE_KEY = "kfx_alcock_ok";
+const GATE_HASH = "10b335a78defc5a34b413c9d8f1dad795e5d8e53adad7ac9c1bf7df8e5cd9673";
 
 async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(value);
