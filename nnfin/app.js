@@ -262,7 +262,7 @@ function createPdfSheet(isFirst) {
     const head = document.createElement("div");
     head.className = "pdf-runhead";
     head.innerHTML =
-      '<img src="assets/logo.png" alt="KaraFX"><span>Client Investment Agreement · Confidential</span>';
+      '<img src="assets/logo.png" alt="KaraFX"><span>Fees Payment · Confidential</span>';
     sheet.appendChild(head);
   }
   return sheet;
@@ -397,7 +397,7 @@ async function makePdf() {
 
     const client = $("clientName").value.trim() || "Client";
     const safeClient = client.replace(/[^\w\- ]+/g, "").replace(/\s+/g, "_");
-    pdf.save(`KaraFX_Investment_Agreement_${safeClient}.pdf`);
+    pdf.save(`KaraFX_Fees_Payment_${safeClient}.pdf`);
     showToast(`Signed PDF downloaded (${paginated.pages.length} pages).`);
   } catch (error) {
     console.error(error);
