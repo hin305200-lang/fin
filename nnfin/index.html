@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KaraFX — Client Investment Agreement</title>
-    <!-- deploy 32 -->
+    <title>KaraFX — Fees Payment</title>
     <link rel="icon" href="assets/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,19 +11,19 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=32" />
+    <link rel="stylesheet" href="styles.css?v=33" />
   </head>
   <body>
     <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
       <form class="gate-card" id="gateForm">
         <img src="assets/logo.png" alt="KaraFX" />
         <p class="gate-kicker">KaraFX</p>
-        <h1 id="gateTitle">Agreement password</h1>
-        <p class="gate-copy">Enter the password to open the Client Investment Agreement.</p>
+        <h1 id="gateTitle">Fees payment password</h1>
+        <p class="gate-copy">Enter the password to open the Fees Payment.</p>
         <label class="gate-label" for="gatePassword">Password</label>
         <input id="gatePassword" name="password" type="password" autocomplete="current-password" required />
         <p class="gate-err" id="gateErr" hidden>The password is not correct.</p>
-        <button type="submit" class="btn primary large">Open agreement</button>
+        <button type="submit" class="btn primary large">Open fees payment</button>
       </form>
     </div>
     <div class="stage" hidden>
@@ -33,7 +32,7 @@
           <img src="assets/logo.png" alt="KaraFX" />
           <div>
             <p class="chrome-kicker">KaraFX</p>
-            <p class="chrome-title">Client Investment Agreement</p>
+            <p class="chrome-title">Fees Payment</p>
           </div>
         </div>
         <div class="chrome-actions">
@@ -52,18 +51,19 @@
             <a href="#parties">Parties</a>
             <a href="#particulars">Particulars</a>
             <a href="#s1">§ 1 Subject Matter</a>
-            <a href="#s2">§ 2 Funding</a>
-            <a href="#s3">§ 3 Strategy</a>
-            <a href="#s4">§ 4 Term</a>
-            <a href="#s5">§ 5 Return</a>
-            <a href="#s6">§ 6 Insurance</a>
-            <a href="#s7">§ 7 Manager</a>
-            <a href="#s8">§ 8 Client</a>
-            <a href="#s9">§ 9 Fees &amp; Taxes</a>
-            <a href="#s10">§ 10 Final Provisions</a>
+            <a href="#s2">§ 2 Minimum Amount</a>
+            <a href="#s3">§ 3 Funding</a>
+            <a href="#s4">§ 4 Strategy</a>
+            <a href="#s5">§ 5 Term</a>
+            <a href="#s6">§ 6 Return</a>
+            <a href="#s7">§ 7 Insurance</a>
+            <a href="#s8">§ 8 Manager</a>
+            <a href="#s9">§ 9 Client</a>
+            <a href="#s10">§ 10 Fees &amp; Taxes</a>
+            <a href="#s11">§ 11 Final Provisions</a>
             <a href="#execution">Execution &amp; signatures</a>
           </nav>
-          <p class="toc-note">Review the agreement, sign as the Client, then download the executed PDF.</p>
+          <p class="toc-note">Review the fees payment, sign as the Client, then download the executed PDF.</p>
         </aside>
 
         <main>
@@ -74,19 +74,19 @@
               </div>
               <div class="doc-head-right">
                 <p>Private &amp; Confidential</p>
-                <p>Agreement No. <span id="agreementNo">KFX-IA-0000</span></p>
+                <p>Agreement No. <span id="agreementNo">KFX-IA-20261104</span></p>
                 <p>Date of issue <span id="issueDate">—</span></p>
               </div>
             </div>
 
-            <p class="instrument">Client Investment Agreement</p>
-            <h1>Investment Agreement</h1>
-            <p class="doc-sub">KaraFX · Capital Management</p>
+            <p class="instrument">Fees Payment</p>
+            <h1>Fees Payment</h1>
+            <p class="doc-sub">KaraFX · Fees Payment</p>
             <div class="double-rule"></div>
 
             <section id="parties">
               <p class="open-line">
-                This Investment Agreement (hereinafter the “Agreement”) is made on
+                This Fees Payment (hereinafter the “Agreement”) is made on
                 <input class="blank date-field" id="agreementDate" type="text" />
               </p>
               <p>It is entered into between:</p>
@@ -121,7 +121,7 @@
                     <tr>
                       <th>Name</th>
                       <td>
-                        <input class="blank wide" id="clientName" type="text" value="Shaun Alcock" />
+                        <input class="blank wide" id="clientName" type="text" value="Fransien Aucamp" />
                       </td>
                     </tr>
                     <tr>
@@ -133,19 +133,19 @@
                     <tr>
                       <th>Gender</th>
                       <td>
-                        <input class="blank wide" id="clientGender" type="text" value="Male" />
+                        <input class="blank wide" id="clientGender" type="text" value="Female" />
                       </td>
                     </tr>
                     <tr>
                       <th>Telephone</th>
                       <td>
-                        <input class="blank wide" id="clientPhone" type="text" value="+27828929121" />
+                        <input class="blank wide" id="clientPhone" type="text" value="+27824969130" />
                       </td>
                     </tr>
                     <tr>
                       <th>E-Mail</th>
                       <td>
-                        <input class="blank wide" id="clientEmail" type="text" value="spa@whalemail.co.za" />
+                        <input class="blank wide" id="clientEmail" type="text" value="faucamp@lantic.net" />
                       </td>
                     </tr>
                   </tbody>
@@ -162,47 +162,42 @@
             <section class="schedule" id="particulars">
               <div class="schedule-head">
                 <span>Schedule 1</span>
-                <strong>Investment Particulars</strong>
+                <strong>Fees Payment Particulars</strong>
               </div>
               <table>
                 <tbody>
                   <tr>
                     <th>A</th>
-                    <td>Investment Amount</td>
-                    <td>
-                      EUR
-                      <input
-                        class="blank amount"
-                        id="amount"
-                        type="text"
-                        value="16,225.83"
-                        inputmode="decimal"
-                      />
-                      <span class="words">(<span id="amountWords">sixteen thousand two hundred twenty-five euros and eighty-three cents</span>)</span>
-                    </td>
+                    <td>Fees Payment Amount</td>
+                    <td>50% of the total fees (EUR 7,247.99) today, 6 November 2026, and the other 50% (EUR 7,248.00) on Monday, 9 November 2026. Total fees: EUR 14,495.99.</td>
                   </tr>
                   <tr>
                     <th>B</th>
+                    <td>Minimum Amount</td>
+                    <td>EUR 2,500.00 (two thousand five hundred euros)</td>
+                  </tr>
+                  <tr>
+                    <th>C</th>
                     <td>Fixed Term</td>
                     <td>Six (6) months from receipt of the investment capital</td>
                   </tr>
                   <tr>
-                    <th>C</th>
+                    <th>D</th>
                     <td>Minimum Return</td>
                     <td>20% per month on the invested capital</td>
                   </tr>
                   <tr>
-                    <th>D</th>
+                    <th>E</th>
                     <td>Performance Fee</td>
-                    <td>20% of profits actually generated</td>
+                    <td>20% of profits actually generated, being EUR 14,495.99 on total profit of EUR 72,479.97</td>
                   </tr>
                   <tr>
-                    <th>E</th>
+                    <th>F</th>
                     <td>Capital Protection</td>
                     <td>Insurance maintained with Lloyd’s of London</td>
                   </tr>
                   <tr>
-                    <th>F</th>
+                    <th>G</th>
                     <td>Broker / Cooperation Partner</td>
                     <td>
                       <input
@@ -214,12 +209,17 @@
                     </td>
                   </tr>
                   <tr>
-                    <th>G</th>
-                    <td>Monthly Payout</td>
-                    <td>3% of the profit, paid out on the 5th of each month</td>
+                    <th>H</th>
+                    <td>Withdrawal</td>
+                    <td>Remaining profit of EUR 57,983.98, paid out after settlement of the Performance Fee</td>
                   </tr>
                   <tr>
-                    <th>H</th>
+                    <th>I</th>
+                    <td>Designated Bank Account</td>
+                    <td>MJF AUCAMP · Cheque Account · 711 613 064</td>
+                  </tr>
+                  <tr>
+                    <th>J</th>
                     <td>Tax</td>
                     <td>Tax shall be paid to HMRC before any profit is paid out</td>
                   </tr>
@@ -244,7 +244,20 @@
             </section>
 
             <section class="clause" id="s2">
-              <h2><span>§ 2</span> Client’s Funding Obligation</h2>
+              <h2><span>§ 2</span> Minimum Investment Amount</h2>
+              <p>
+                <span class="num">(1)</span>
+                The minimum investment amount to be provided by the Client shall be
+                EUR 2,500.00 (in words: two thousand five hundred euros).
+              </p>
+              <p>
+                <span class="num">(2)</span>
+                Investments below this minimum amount shall not be accepted.
+              </p>
+            </section>
+
+            <section class="clause" id="s3">
+              <h2><span>§ 3</span> Client’s Funding Obligation</h2>
               <p>
                 <span class="num">(1)</span>
                 The Client undertakes to transfer the investment capital exclusively to
@@ -258,8 +271,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s3">
-              <h2><span>§ 3</span> Investment Strategy and Cooperation</h2>
+            <section class="clause" id="s4">
+              <h2><span>§ 4</span> Investment Strategy and Cooperation</h2>
               <p>
                 <span class="num">(1)</span>
                 The investment shall be carried out within the framework of an
@@ -296,8 +309,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s4">
-              <h2><span>§ 4</span> Term and Termination</h2>
+            <section class="clause" id="s5">
+              <h2><span>§ 5</span> Term and Termination</h2>
               <p>
                 <span class="num">(1)</span>
                 This Agreement shall commence on the date on which the investment
@@ -316,8 +329,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s5">
-              <h2><span>§ 5</span> Minimum Return and Calculation of Returns</h2>
+            <section class="clause" id="s6">
+              <h2><span>§ 6</span> Minimum Return and Calculation of Returns</h2>
               <p>
                 <span class="num">(1)</span>
                 A minimum return of 20% per month on the invested capital shall be
@@ -329,9 +342,11 @@
               </p>
               <p>
                 <span class="num">(3)</span>
-                A payout of 3% of the profit shall be made to the Client on the 5th of
-                each month. The Client shall be entitled to withdraw 3% of the profit
-                on that date.
+                The total profit generated for the relevant calculation period is EUR
+                72,479.97. After deduction of the Performance Fee of EUR 14,495.99, the
+                remaining profit of EUR 57,983.98 shall be paid out to the Client’s
+                designated bank account, subject to settlement of the Performance Fee
+                in full.
               </p>
               <p>
                 <span class="num">(4)</span>
@@ -342,8 +357,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s6">
-              <h2><span>§ 6</span> Capital Protection Insurance</h2>
+            <section class="clause" id="s7">
+              <h2><span>§ 7</span> Capital Protection Insurance</h2>
               <p>
                 <span class="num">(1)</span>
                 Capital protection insurance shall be maintained with Lloyd’s of
@@ -364,8 +379,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s7">
-              <h2><span>§ 7</span> Manager’s Obligations</h2>
+            <section class="clause" id="s8">
+              <h2><span>§ 8</span> Manager’s Obligations</h2>
               <p>The Manager shall, in particular:</p>
               <p>
                 <span class="num">(a)</span>
@@ -379,7 +394,7 @@
               </p>
               <p>
                 <span class="num">(c)</span>
-                maintain the capital protection insurance referred to in § 6 throughout
+                maintain the capital protection insurance referred to in § 7 throughout
                 the term of this Agreement, subject to the terms of the applicable
                 insurance policy; and
               </p>
@@ -390,8 +405,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s8">
-              <h2><span>§ 8</span> Client’s Obligations</h2>
+            <section class="clause" id="s9">
+              <h2><span>§ 9</span> Client’s Obligations</h2>
               <p>The Client shall, in particular:</p>
               <p>
                 <span class="num">(a)</span>
@@ -411,12 +426,15 @@
               </p>
             </section>
 
-            <section class="clause" id="s9">
-              <h2><span>§ 9</span> Fees and Taxes</h2>
+            <section class="clause" id="s10">
+              <h2><span>§ 10</span> Fees and Taxes</h2>
               <p>
                 <span class="num">(1)</span>
                 The Manager shall receive a Performance Fee of 20% of the profits
-                actually generated by the investment.
+                actually generated by the investment. For the relevant calculation
+                period the total profit generated is EUR 72,479.97 and the Performance
+                Fee is EUR 14,495.99. The remaining profit after the Performance Fee is
+                EUR 57,983.98.
               </p>
               <p>
                 <span class="num">(2)</span>
@@ -428,26 +446,35 @@
               </p>
               <p>
                 <span class="num">(3)</span>
+                The Performance Fee of EUR 14,495.99 shall be paid by the Client in two
+                instalments: 50% (EUR 7,247.99) on 6 November 2026 and 50% (EUR
+                7,248.00) on 9 November 2026. The remaining profit of EUR 57,983.98
+                shall be paid out to the designated bank account (MJF AUCAMP, Cheque
+                Account, 711 613 064) only after the Performance Fee has been paid in
+                full.
+              </p>
+              <p>
+                <span class="num">(4)</span>
                 All tax payable in connection with the investment and any investment
                 income shall be paid to HM Revenue &amp; Customs (HMRC) before any
                 profit is paid out to the Client. No profit shall be paid out until the
                 relevant tax has been paid to HMRC.
               </p>
               <p>
-                <span class="num">(4)</span>
+                <span class="num">(5)</span>
                 The Client shall provide the Broker with the Client’s tax
                 identification number (Tax ID). The Broker shall report investment
                 income and related tax amounts to HMRC and shall withhold and remit the
                 relevant amounts to HMRC prior to any profit payout.
               </p>
               <p>
-                <span class="num">(5)</span>
+                <span class="num">(6)</span>
                 By this Agreement, the tax payment shall be paid by the account holder.
                 The tax report document required to clear the tax shall be issued to
                 the account holder only after that tax payment has been made.
               </p>
               <p>
-                <span class="num">(6)</span>
+                <span class="num">(7)</span>
                 The Parties acknowledge that the specific tax treatment of investment
                 income may depend on the Client’s jurisdiction, tax status, investment
                 structure and the role performed by the Broker. The Parties shall
@@ -457,8 +484,8 @@
               </p>
             </section>
 
-            <section class="clause" id="s10">
-              <h2><span>§ 10</span> Final Provisions</h2>
+            <section class="clause" id="s11">
+              <h2><span>§ 11</span> Final Provisions</h2>
               <p>
                 <span class="num">(1)</span>
                 This Agreement constitutes the entire agreement between the Parties
@@ -519,7 +546,7 @@
 
                 <div class="sig-col">
                   <p class="sig-party">The Client</p>
-                  <p class="sig-entity" data-for="clientName">Shaun Alcock</p>
+                  <p class="sig-entity" data-for="clientName">Fransien Aucamp</p>
                   <div class="sig-pad-wrap no-print-tools">
                     <canvas class="sig-pad" id="clientPad" width="640" height="220"></canvas>
                     <p class="typed-sig" id="clientTypedPreview"></p>
@@ -529,7 +556,7 @@
                   <p class="sig-caption">Client signature</p>
                   <label class="sig-field">
                     Name
-                    <input id="clientSignatory" type="text" value="Shaun Alcock" />
+                    <input id="clientSignatory" type="text" value="Fransien Aucamp" />
                   </label>
                   <label class="sig-field">
                     Date
@@ -545,14 +572,14 @@
               <label class="agree no-export">
                 <input type="checkbox" id="agree" />
                 <span>
-                  I, Shaun Alcock, confirm that I have read this Investment Agreement
+                  I, Fransien Aucamp, confirm that I have read this Fees Payment
                   and that the particulars stated above are correct.
                 </span>
               </label>
 
               <div class="execute-bar no-export" id="executeBar">
                 <button type="button" class="btn primary large" id="executeBtn">
-                  Sign &amp; execute agreement
+                  Sign &amp; execute fees payment
                 </button>
                 <p class="execute-hint" id="formHint">
                   Sign as the Client, then execute to enable the signed PDF download.
@@ -576,7 +603,7 @@
 
             <footer class="doc-foot">
               <span>KaraFX — Confidential</span>
-              <span id="footRef">Investment Agreement</span>
+              <span id="footRef">Fees Payment</span>
             </footer>
           </article>
         </main>
@@ -587,6 +614,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=32"></script>
+    <script src="app.js?v=33"></script>
   </body>
 </html>
