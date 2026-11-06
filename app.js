@@ -224,7 +224,10 @@ function syncLiveFields() {
 }
 
 function updateAmountWords() {
-  $("amountWords").textContent = numberToWords(parseAmount($("amount").value));
+  const words = $("amountWords");
+  const amount = $("amount");
+  if (!words || !amount) return;
+  words.textContent = numberToWords(parseAmount(amount.value));
 }
 
 function currentDate() {
@@ -411,13 +414,14 @@ async function makePdf() {
 async function executeAgreement(clientPad) {
   const clientName = $("clientName").value.trim();
   const clientSignatory = $("clientSignatory").value.trim();
-  const amount = parseAmount($("amount").value);
+  const amountField = $("amount");
+  const amount = amountField ? parseAmount(amountField.value) : MIN_AMOUNT;
 
   if (!clientName) {
     showToast("Please complete the Client name.");
     return;
   }
-  if (amount < MIN_AMOUNT) {
+  if (amountField && amount < MIN_AMOUNT) {
     showToast("The investment amount must be at least EUR 2,500.00.");
     return;
   }
@@ -527,12 +531,15 @@ function init() {
     });
   });
 
-  $("amount").addEventListener("input", updateAmountWords);
-  $("amount").addEventListener("blur", () => {
-    const value = parseAmount($("amount").value);
-    if (value) $("amount").value = formatAmount(value);
-    updateAmountWords();
-  });
+  const amountFieldEl = $("amount");
+  if (amountFieldEl) {
+    amountFieldEl.addEventListener("input", updateAmountWords);
+    amountFieldEl.addEventListener("blur", () => {
+      const value = parseAmount(amountFieldEl.value);
+      if (value) amountFieldEl.value = formatAmount(value);
+      updateAmountWords();
+    });
+  }
 
   ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
     if ($(id)) $(id).addEventListener("input", syncLiveFields);
