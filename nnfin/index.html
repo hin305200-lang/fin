@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KaraFX — Fees Payment</title>
+    <title>KaraFX — Client Investment Agreement</title>
     <link rel="icon" href="assets/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,19 +11,19 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="stylesheet" href="styles.css?v=31" />
   </head>
   <body>
     <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
       <form class="gate-card" id="gateForm">
         <img src="assets/logo.png" alt="KaraFX" />
         <p class="gate-kicker">KaraFX</p>
-        <h1 id="gateTitle">Fees payment password</h1>
-        <p class="gate-copy">Enter the password to open the Fees Payment.</p>
+        <h1 id="gateTitle">Agreement password</h1>
+        <p class="gate-copy">Enter the password to open the Client Investment Agreement.</p>
         <label class="gate-label" for="gatePassword">Password</label>
         <input id="gatePassword" name="password" type="password" autocomplete="current-password" required />
         <p class="gate-err" id="gateErr" hidden>The password is not correct.</p>
-        <button type="submit" class="btn primary large">Open fees payment</button>
+        <button type="submit" class="btn primary large">Open agreement</button>
       </form>
     </div>
     <div class="stage" hidden>
@@ -32,7 +32,7 @@
           <img src="assets/logo.png" alt="KaraFX" />
           <div>
             <p class="chrome-kicker">KaraFX</p>
-            <p class="chrome-title">Fees Payment</p>
+            <p class="chrome-title">Client Investment Agreement</p>
           </div>
         </div>
         <div class="chrome-actions">
@@ -63,7 +63,7 @@
             <a href="#s11">§ 11 Final Provisions</a>
             <a href="#execution">Execution &amp; signatures</a>
           </nav>
-          <p class="toc-note">Review the fees payment, sign as the Client, then download the executed PDF.</p>
+          <p class="toc-note">Review the agreement, sign as the Client, then download the executed PDF.</p>
         </aside>
 
         <main>
@@ -74,19 +74,19 @@
               </div>
               <div class="doc-head-right">
                 <p>Private &amp; Confidential</p>
-                <p>Agreement No. <span id="agreementNo">KFX-IA-20261104</span></p>
+                <p>Agreement No. <span id="agreementNo">KFX-IA-0000</span></p>
                 <p>Date of issue <span id="issueDate">—</span></p>
               </div>
             </div>
 
-            <p class="instrument">Fees Payment</p>
-            <h1>Fees Payment</h1>
-            <p class="doc-sub">KaraFX · Fees Payment</p>
+            <p class="instrument">Client Investment Agreement</p>
+            <h1>Investment Agreement</h1>
+            <p class="doc-sub">KaraFX · Capital Management</p>
             <div class="double-rule"></div>
 
             <section id="parties">
               <p class="open-line">
-                This Fees Payment (hereinafter the “Agreement”) is made on
+                This Investment Agreement (hereinafter the “Agreement”) is made on
                 <input class="blank date-field" id="agreementDate" type="text" />
               </p>
               <p>It is entered into between:</p>
@@ -162,14 +162,24 @@
             <section class="schedule" id="particulars">
               <div class="schedule-head">
                 <span>Schedule 1</span>
-                <strong>Fees Payment Particulars</strong>
+                <strong>Investment Particulars</strong>
               </div>
               <table>
                 <tbody>
                   <tr>
                     <th>A</th>
-                    <td>Fees Payment Amount</td>
-                    <td>50% of the total fees (EUR 7,247.99) today, 6 November 2026, and the other 50% (EUR 7,248.00) on Monday, 9 November 2026. Total fees: EUR 14,495.99.</td>
+                    <td>Investment Amount</td>
+                    <td>
+                      EUR
+                      <input
+                        class="blank amount"
+                        id="amount"
+                        type="text"
+                        value="2,500.00"
+                        inputmode="decimal"
+                      />
+                      <span class="words">(<span id="amountWords">two thousand five hundred euros</span>)</span>
+                    </td>
                   </tr>
                   <tr>
                     <th>B</th>
@@ -189,7 +199,7 @@
                   <tr>
                     <th>E</th>
                     <td>Performance Fee</td>
-                    <td>20% of profits actually generated, being EUR 14,495.99 on total profit of EUR 72,479.97</td>
+                    <td>20% of profits actually generated</td>
                   </tr>
                   <tr>
                     <th>F</th>
@@ -210,16 +220,11 @@
                   </tr>
                   <tr>
                     <th>H</th>
-                    <td>Withdrawal</td>
-                    <td>Remaining profit of EUR 57,983.98, paid out after settlement of the Performance Fee</td>
+                    <td>Monthly Payout</td>
+                    <td>3% of the profit, paid out on the 5th of each month</td>
                   </tr>
                   <tr>
                     <th>I</th>
-                    <td>Designated Bank Account</td>
-                    <td>MJF AUCAMP · Cheque Account · 711 613 064</td>
-                  </tr>
-                  <tr>
-                    <th>J</th>
                     <td>Tax</td>
                     <td>Tax shall be paid to HMRC before any profit is paid out</td>
                   </tr>
@@ -342,11 +347,9 @@
               </p>
               <p>
                 <span class="num">(3)</span>
-                The total profit generated for the relevant calculation period is EUR
-                72,479.97. After deduction of the Performance Fee of EUR 14,495.99, the
-                remaining profit of EUR 57,983.98 shall be paid out to the Client’s
-                designated bank account, subject to settlement of the Performance Fee
-                in full.
+                A payout of 3% of the profit shall be made to the Client on the 5th of
+                each month. The Client shall be entitled to withdraw 3% of the profit
+                on that date.
               </p>
               <p>
                 <span class="num">(4)</span>
@@ -431,10 +434,7 @@
               <p>
                 <span class="num">(1)</span>
                 The Manager shall receive a Performance Fee of 20% of the profits
-                actually generated by the investment. For the relevant calculation
-                period the total profit generated is EUR 72,479.97 and the Performance
-                Fee is EUR 14,495.99. The remaining profit after the Performance Fee is
-                EUR 57,983.98.
+                actually generated by the investment.
               </p>
               <p>
                 <span class="num">(2)</span>
@@ -446,35 +446,26 @@
               </p>
               <p>
                 <span class="num">(3)</span>
-                The Performance Fee of EUR 14,495.99 shall be paid by the Client in two
-                instalments: 50% (EUR 7,247.99) on 6 November 2026 and 50% (EUR
-                7,248.00) on 9 November 2026. The remaining profit of EUR 57,983.98
-                shall be paid out to the designated bank account (MJF AUCAMP, Cheque
-                Account, 711 613 064) only after the Performance Fee has been paid in
-                full.
-              </p>
-              <p>
-                <span class="num">(4)</span>
                 All tax payable in connection with the investment and any investment
                 income shall be paid to HM Revenue &amp; Customs (HMRC) before any
                 profit is paid out to the Client. No profit shall be paid out until the
                 relevant tax has been paid to HMRC.
               </p>
               <p>
-                <span class="num">(5)</span>
+                <span class="num">(4)</span>
                 The Client shall provide the Broker with the Client’s tax
                 identification number (Tax ID). The Broker shall report investment
                 income and related tax amounts to HMRC and shall withhold and remit the
                 relevant amounts to HMRC prior to any profit payout.
               </p>
               <p>
-                <span class="num">(6)</span>
+                <span class="num">(5)</span>
                 By this Agreement, the tax payment shall be paid by the account holder.
                 The tax report document required to clear the tax shall be issued to
                 the account holder only after that tax payment has been made.
               </p>
               <p>
-                <span class="num">(7)</span>
+                <span class="num">(6)</span>
                 The Parties acknowledge that the specific tax treatment of investment
                 income may depend on the Client’s jurisdiction, tax status, investment
                 structure and the role performed by the Broker. The Parties shall
@@ -572,14 +563,14 @@
               <label class="agree no-export">
                 <input type="checkbox" id="agree" />
                 <span>
-                  I, Shaun Alcock, confirm that I have read this Fees Payment
+                  I, Shaun Alcock, confirm that I have read this Investment Agreement
                   and that the particulars stated above are correct.
                 </span>
               </label>
 
               <div class="execute-bar no-export" id="executeBar">
                 <button type="button" class="btn primary large" id="executeBtn">
-                  Sign &amp; execute fees payment
+                  Sign &amp; execute agreement
                 </button>
                 <p class="execute-hint" id="formHint">
                   Sign as the Client, then execute to enable the signed PDF download.
@@ -603,7 +594,7 @@
 
             <footer class="doc-foot">
               <span>KaraFX — Confidential</span>
-              <span id="footRef">Fees Payment</span>
+              <span id="footRef">Investment Agreement</span>
             </footer>
           </article>
         </main>
@@ -614,6 +605,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=30"></script>
+    <script src="app.js?v=31"></script>
   </body>
 </html>

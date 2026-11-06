@@ -224,10 +224,7 @@ function syncLiveFields() {
 }
 
 function updateAmountWords() {
-  const words = $("amountWords");
-  const amount = $("amount");
-  if (!words || !amount) return;
-  words.textContent = numberToWords(parseAmount(amount.value));
+  $("amountWords").textContent = numberToWords(parseAmount($("amount").value));
 }
 
 function currentDate() {
@@ -262,7 +259,7 @@ function createPdfSheet(isFirst) {
     const head = document.createElement("div");
     head.className = "pdf-runhead";
     head.innerHTML =
-      '<img src="assets/logo.png" alt="KaraFX"><span>Fees Payment · Confidential</span>';
+      '<img src="assets/logo.png" alt="KaraFX"><span>Client Investment Agreement · Confidential</span>';
     sheet.appendChild(head);
   }
   return sheet;
@@ -397,7 +394,7 @@ async function makePdf() {
 
     const client = $("clientName").value.trim() || "Client";
     const safeClient = client.replace(/[^\w\- ]+/g, "").replace(/\s+/g, "_");
-    pdf.save(`KaraFX_Fees_Payment_${safeClient}.pdf`);
+    pdf.save(`KaraFX_Investment_Agreement_${safeClient}.pdf`);
     showToast(`Signed PDF downloaded (${paginated.pages.length} pages).`);
   } catch (error) {
     console.error(error);
@@ -414,14 +411,13 @@ async function makePdf() {
 async function executeAgreement(clientPad) {
   const clientName = $("clientName").value.trim();
   const clientSignatory = $("clientSignatory").value.trim();
-  const amountField = $("amount");
-  const amount = amountField ? parseAmount(amountField.value) : MIN_AMOUNT;
+  const amount = parseAmount($("amount").value);
 
   if (!clientName) {
     showToast("Please complete the Client name.");
     return;
   }
-  if (amountField && amount < MIN_AMOUNT) {
+  if (amount < MIN_AMOUNT) {
     showToast("The investment amount must be at least EUR 2,500.00.");
     return;
   }
@@ -517,8 +513,7 @@ function init() {
   $("agreementDate").value = formatLongDate(today);
   $("issueDate").textContent = formatLongDate(today);
   $("clientSignDate").value = formatLongDate(today);
-  $("agreementNo").textContent = "KFX-IA-20261104";
-  $("agreementDate").value = "4 November 2026";
+  $("agreementNo").textContent = makeAgreementNo(today);
   $("footRef").textContent = $("agreementNo").textContent;
 
   const clientPad = new SignaturePad($("clientPad"));
@@ -531,15 +526,12 @@ function init() {
     });
   });
 
-  const amountFieldEl = $("amount");
-  if (amountFieldEl) {
-    amountFieldEl.addEventListener("input", updateAmountWords);
-    amountFieldEl.addEventListener("blur", () => {
-      const value = parseAmount(amountFieldEl.value);
-      if (value) amountFieldEl.value = formatAmount(value);
-      updateAmountWords();
-    });
-  }
+  $("amount").addEventListener("input", updateAmountWords);
+  $("amount").addEventListener("blur", () => {
+    const value = parseAmount($("amount").value);
+    if (value) $("amount").value = formatAmount(value);
+    updateAmountWords();
+  });
 
   ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
     if ($(id)) $(id).addEventListener("input", syncLiveFields);
