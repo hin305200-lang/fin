@@ -1,3 +1,4 @@
+const MIN_AMOUNT = 2500;
 const PAGE_WIDTH_PX = 794;
 const PAGE_HEIGHT_PX = 1123;
 
@@ -217,7 +218,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Peter Telle" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "IOANNIS KAKAGIAS" : "KaraFX";
       return;
     }
     if (el.classList.contains("live")) {
@@ -230,7 +231,7 @@ function updateAmountWords() {
   const words = $("amountWords");
   if (!words) return;
   const amount = $("amount");
-  words.textContent = numberToWords(amount ? parseAmount(amount.value) : 9982.12);
+  words.textContent = numberToWords(amount ? parseAmount(amount.value) : MIN_AMOUNT);
 }
 
 function currentDate() {
@@ -426,6 +427,12 @@ async function executeAgreement(clientPad) {
     showToast("Please complete the Client name.");
     return;
   }
+  const amountField = $("amount");
+  const amount = amountField ? parseAmount(amountField.value) : MIN_AMOUNT;
+  if (amount < MIN_AMOUNT) {
+    showToast("The investment amount must be at least EUR 2,500.00.");
+    return;
+  }
   if (!clientSignatory) {
     showToast("Please enter the Client signatory name.");
     return;
@@ -458,8 +465,8 @@ async function executeAgreement(clientPad) {
   showToast("Agreement executed. You can download the signed PDF.");
 }
 
-const GATE_KEY = "kfx_telle_ok";
-const GATE_HASH = "42049b518a568cfad527c800fca796c49acea992fc704d89503748f284326eb0";
+const GATE_KEY = "kfx_kakagias_ok";
+const GATE_HASH = "291ee5709903b37a7b1152e058bf9c0ba79159eb5f945860162a7a9922402348";
 
 async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(value);
@@ -534,6 +541,16 @@ function init() {
       $("clientTypedPreview").textContent = $("clientSignatory").value;
     });
   });
+
+  const amountFieldEl = $("amount");
+  if (amountFieldEl) {
+    amountFieldEl.addEventListener("input", updateAmountWords);
+    amountFieldEl.addEventListener("blur", () => {
+      const value = parseAmount(amountFieldEl.value);
+      if (value) amountFieldEl.value = formatAmount(value);
+      updateAmountWords();
+    });
+  }
 
   ["managerName", "clientName", "brokerName"].forEach((id) => {
     if ($(id) && $(id).tagName === "INPUT" && !$(id).readOnly && $(id).type !== "hidden") {

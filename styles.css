@@ -516,15 +516,21 @@ h1 {
   border-bottom-color: var(--crimson);
 }
 
-body.fixed-particulars .blank {
+body.fixed-particulars .blank:not(.amount) {
   border-bottom-color: transparent;
   font-style: normal;
 }
 
-body.fixed-particulars input.blank,
+body.fixed-particulars input.blank:not(.amount),
 body.fixed-particulars .sig-field input {
   pointer-events: none;
   caret-color: transparent;
+}
+
+body.fixed-particulars .blank.amount {
+  pointer-events: auto;
+  caret-color: auto;
+  border-bottom-color: var(--ink);
 }
 
 .schedule {
