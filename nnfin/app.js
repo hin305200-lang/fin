@@ -220,10 +220,6 @@ function syncLiveFields() {
       el.textContent = el.dataset.for === "clientName" ? "Peter Telle" : "KaraFX";
       return;
     }
-    if (el.dataset.for === "accountManager") {
-      el.textContent = "";
-      return;
-    }
     if (el.classList.contains("live")) {
       el.textContent = "[Name of Broker / Cooperation Partner]";
     }
@@ -539,7 +535,7 @@ function init() {
     });
   });
 
-  ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
+  ["managerName", "clientName", "brokerName"].forEach((id) => {
     if ($(id) && $(id).tagName === "INPUT" && !$(id).readOnly && $(id).type !== "hidden") {
       $(id).addEventListener("input", syncLiveFields);
     }
