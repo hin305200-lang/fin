@@ -516,6 +516,17 @@ h1 {
   border-bottom-color: var(--crimson);
 }
 
+body.fixed-particulars .blank {
+  border-bottom-color: transparent;
+  font-style: normal;
+}
+
+body.fixed-particulars input.blank,
+body.fixed-particulars .sig-field input {
+  pointer-events: none;
+  caret-color: transparent;
+}
+
 .schedule {
   padding: 0;
   border: 1px solid var(--ink);

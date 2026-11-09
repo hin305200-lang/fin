@@ -217,7 +217,7 @@ function syncLiveFields() {
       return;
     }
     if (el.classList.contains("sig-entity")) {
-      el.textContent = el.dataset.for === "clientName" ? "Shaun Alcock" : "KaraFX";
+      el.textContent = el.dataset.for === "clientName" ? "Peter Telle" : "KaraFX";
       return;
     }
     if (el.dataset.for === "accountManager") {
@@ -231,7 +231,10 @@ function syncLiveFields() {
 }
 
 function updateAmountWords() {
-  $("amountWords").textContent = numberToWords(parseAmount($("amount").value));
+  const words = $("amountWords");
+  if (!words) return;
+  const amount = $("amount");
+  words.textContent = numberToWords(amount ? parseAmount(amount.value) : 9982.12);
 }
 
 function currentDate() {
@@ -252,6 +255,10 @@ function waitForImages(root) {
 
 function replaceInputs(root) {
   root.querySelectorAll("input").forEach((input) => {
+    if (input.type === "hidden" || input.type === "checkbox" || input.type === "password") {
+      input.remove();
+      return;
+    }
     const text = document.createElement(input.classList.contains("wide") ? "div" : "span");
     text.className = input.className || "blank";
     text.textContent = input.value || " ";
@@ -455,8 +462,8 @@ async function executeAgreement(clientPad) {
   showToast("Agreement executed. You can download the signed PDF.");
 }
 
-const GATE_KEY = "kfx_alcock_ok";
-const GATE_HASH = "10b335a78defc5a34b413c9d8f1dad795e5d8e53adad7ac9c1bf7df8e5cd9673";
+const GATE_KEY = "kfx_telle_ok";
+const GATE_HASH = "42049b518a568cfad527c800fca796c49acea992fc704d89503748f284326eb0";
 
 async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(value);
@@ -512,9 +519,13 @@ function initGate() {
 
 function init() {
   const today = currentDate();
-  $("agreementDate").value = formatLongDate(today);
+  const agreementDate = $("agreementDate");
+  if (agreementDate) {
+    if (agreementDate.tagName === "INPUT") agreementDate.value = formatLongDate(today);
+    else agreementDate.textContent = formatLongDate(today);
+  }
   $("issueDate").textContent = formatLongDate(today);
-  $("clientSignDate").value = formatLongDate(today);
+  if ($("clientSignDate")) $("clientSignDate").value = formatLongDate(today);
   $("agreementNo").textContent = makeAgreementNo(today);
   $("footRef").textContent = $("agreementNo").textContent;
 
@@ -528,15 +539,10 @@ function init() {
     });
   });
 
-  $("amount").addEventListener("input", updateAmountWords);
-  $("amount").addEventListener("blur", () => {
-    const value = parseAmount($("amount").value);
-    if (value) $("amount").value = formatAmount(value);
-    updateAmountWords();
-  });
-
   ["managerName", "clientName", "accountManager", "brokerName"].forEach((id) => {
-    if ($(id)) $(id).addEventListener("input", syncLiveFields);
+    if ($(id) && $(id).tagName === "INPUT" && !$(id).readOnly && $(id).type !== "hidden") {
+      $(id).addEventListener("input", syncLiveFields);
+    }
   });
 
   $("clientSignatory").addEventListener("input", () => {

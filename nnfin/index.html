@@ -11,9 +11,9 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=36" />
+    <link rel="stylesheet" href="styles.css?v=37" />
   </head>
-  <body>
+  <body class="fixed-particulars">
     <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
       <form class="gate-card" id="gateForm">
         <img src="assets/logo.png" alt="KaraFX" />
@@ -86,7 +86,7 @@
             <section id="parties">
               <p class="open-line">
                 This Investment Agreement (hereinafter the “Agreement”) is made on
-                <input class="blank date-field" id="agreementDate" type="text" />
+                <span class="blank date-field" id="agreementDate"></span>
               </p>
               <p>It is entered into between:</p>
 
@@ -97,13 +97,15 @@
                     <tr>
                       <th>Company</th>
                       <td>
-                        <input class="blank wide" id="managerName" type="text" value="KaraFX" />
+                        <span class="blank wide">KaraFX</span>
+                        <input type="hidden" id="managerName" value="KaraFX" />
                       </td>
                     </tr>
                     <tr>
                       <th>Account Manager</th>
                       <td>
-                        <input class="blank wide" id="accountManager" type="text" value="" />
+                        <span class="blank wide"></span>
+                        <input type="hidden" id="accountManager" value="" />
                       </td>
                     </tr>
                   </tbody>
@@ -120,32 +122,49 @@
                     <tr>
                       <th>Name</th>
                       <td>
-                        <input class="blank wide" id="clientName" type="text" value="Shaun Alcock" />
+                        <span class="blank wide">Peter Telle</span>
+                        <input type="hidden" id="clientName" value="Peter Telle" />
                       </td>
+                    </tr>
+                    <tr>
+                      <th>Forenames</th>
+                      <td>Peter Arnoldus Leendert</td>
+                    </tr>
+                    <tr>
+                      <th>Surname</th>
+                      <td>Telle</td>
+                    </tr>
+                    <tr>
+                      <th>I.D. No.</th>
+                      <td>501116 5109 08 5</td>
+                    </tr>
+                    <tr>
+                      <th>Citizenship</th>
+                      <td>S.A. Citizen</td>
+                    </tr>
+                    <tr>
+                      <th>Country of birth</th>
+                      <td>Holland</td>
+                    </tr>
+                    <tr>
+                      <th>Date of birth</th>
+                      <td>16 November 1950</td>
                     </tr>
                     <tr>
                       <th>Country</th>
-                      <td>
-                        <input class="blank wide" id="clientCountry" type="text" value="South Africa" />
-                      </td>
+                      <td>South Africa</td>
                     </tr>
                     <tr>
                       <th>Gender</th>
-                      <td>
-                        <input class="blank wide" id="clientGender" type="text" value="Male" />
-                      </td>
+                      <td>Male</td>
                     </tr>
                     <tr>
                       <th>Telephone</th>
-                      <td>
-                        <input class="blank wide" id="clientPhone" type="text" value="+27828929121" />
-                      </td>
+                      <td>+27834588053</td>
                     </tr>
                     <tr>
                       <th>E-Mail</th>
-                      <td>
-                        <input class="blank wide" id="clientEmail" type="text" value="spa@whalemail.co.za" />
-                      </td>
+                      <td>peter@ultravalves.co.za</td>
                     </tr>
                   </tbody>
                 </table>
@@ -169,15 +188,8 @@
                     <th>A</th>
                     <td>Investment Amount</td>
                     <td>
-                      EUR
-                      <input
-                        class="blank amount"
-                        id="amount"
-                        type="text"
-                        value="16,225.83"
-                        inputmode="decimal"
-                      />
-                      <span class="words">(<span id="amountWords">sixteen thousand two hundred twenty-five euros and eighty-three cents</span>)</span>
+                      EUR 9,982.12
+                      <span class="words">(<span id="amountWords">nine thousand nine hundred eighty-two euros and twelve cents</span>)</span>
                     </td>
                   </tr>
                   <tr>
@@ -204,12 +216,8 @@
                     <th>F</th>
                     <td>Broker / Cooperation Partner</td>
                     <td>
-                      <input
-                        class="blank wide"
-                        id="brokerName"
-                        type="text"
-                        value="KaraFX"
-                      />
+                      <span class="blank wide">KaraFX</span>
+                      <input type="hidden" id="brokerName" value="KaraFX" />
                     </td>
                   </tr>
                   <tr>
@@ -493,7 +501,7 @@
               </p>
               <p>
                 Place of signature:
-                <input class="blank date-field" id="place" type="text" value="South Africa" />
+                <span class="blank date-field">South Africa</span>
               </p>
               <p>
                 By signing below, the Client confirms that the Client has read this
@@ -518,7 +526,7 @@
 
                 <div class="sig-col">
                   <p class="sig-party">The Client</p>
-                  <p class="sig-entity" data-for="clientName">Shaun Alcock</p>
+                  <p class="sig-entity" data-for="clientName">Peter Telle</p>
                   <div class="sig-pad-wrap no-print-tools">
                     <canvas class="sig-pad" id="clientPad" width="640" height="220"></canvas>
                     <p class="typed-sig" id="clientTypedPreview"></p>
@@ -528,7 +536,7 @@
                   <p class="sig-caption">Client signature</p>
                   <label class="sig-field">
                     Name
-                    <input id="clientSignatory" type="text" value="Shaun Alcock" />
+                    <input id="clientSignatory" type="text" value="Peter Telle" readonly />
                   </label>
                   <label class="sig-field">
                     Date
@@ -544,7 +552,7 @@
               <label class="agree no-export">
                 <input type="checkbox" id="agree" />
                 <span>
-                  I, Shaun Alcock, confirm that I have read this Investment Agreement
+                  I, Peter Telle, confirm that I have read this Investment Agreement
                   and that the particulars stated above are correct.
                 </span>
               </label>
@@ -586,6 +594,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="app.js?v=36"></script>
+    <script src="app.js?v=37"></script>
   </body>
 </html>
